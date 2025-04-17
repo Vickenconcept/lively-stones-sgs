@@ -49,7 +49,10 @@
 <body class="h-screen ">
     <div id="app" class="h-full  text-gray-700 ">
 
-        <div class="">
+        <x-notification />
+        <x-navbar />
+        <x-sidebar />
+        <div class="h-full sm:ml-64 bg-white pt-20">
            
             {{-- {{ $slot }} --}}
             @yield('content')

@@ -22,6 +22,9 @@ return new class extends Migration
             $table->float('average');
             $table->string('grade');
             $table->string('position')->nullable();
+            $table->string('c_avarage')->nullable();
+            $table->integer('cumulative')->nullable();
+            $table->string('c_position')->nullable();
             $table->timestamps();
         });
     }

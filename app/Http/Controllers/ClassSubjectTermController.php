@@ -133,7 +133,13 @@ class ClassSubjectTermController extends Controller
 
     public function destroy(ClassSubjectTerm $ClassSubjectTerm)
     {
+        StudentScore::where('subject_id', $ClassSubjectTerm->subject_id)
+            ->where('term_id', $ClassSubjectTerm->term_id)
+            ->where('session_year_id', $ClassSubjectTerm->session_year_id)
+            ->delete();
+
         $ClassSubjectTerm->delete();
+
         return back();
     }
 }

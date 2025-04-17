@@ -1,10 +1,8 @@
-@extends('layouts.app')
-
-@section('content')
+<x-guest-layout>
     <div class="max-w-xl mx-auto mt-10 p-6 bg-white rounded shadow">
         <h2 class="text-2xl font-semibold mb-6 text-center">View Student Result</h2>
 
-       <x-session-msg />
+        <x-session-msg />
         <form action="{{ route('results.student') }}" method="GET">
             @csrf
 
@@ -31,7 +29,8 @@
 
             <div class="mb-4">
                 <label for="session_year_id" class="block text-gray-700 font-semibold">Session Year</label>
-                <select name="session_year_id" id="session_year_id" class="w-full border-gray-300 rounded mt-1" required>
+                <select name="session_year_id" id="session_year_id" class="w-full border-gray-300 rounded mt-1"
+                    required>
                     <option value="">-- Select Session --</option>
                     @foreach ($sessions as $session)
                         <option value="{{ $session->id }}">{{ $session->name }}</option>
@@ -44,4 +43,4 @@
             </button>
         </form>
     </div>
-@endsection
+</x-guest-layout>

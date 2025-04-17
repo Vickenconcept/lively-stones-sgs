@@ -25,7 +25,6 @@
 
     @yield('styles')
 
-    @livewireStyles
 </head>
 
 <body class="h-full">

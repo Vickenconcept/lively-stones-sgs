@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('scratch_codes', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
-            $table->foreignId('student_id')->nullable()->constrained()->nullOnDelete(); // attach to student
-            $table->unsignedTinyInteger('uses_left')->default(2); // allow 2 uses
+            $table->foreignId('student_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('term_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('session_year_id')->nullable()->constrained()->nullOnDelete();
+            $table->unsignedTinyInteger('uses_left')->default(2);
             $table->timestamps();
         });
     }

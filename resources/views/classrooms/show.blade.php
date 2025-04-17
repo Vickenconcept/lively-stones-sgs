@@ -46,12 +46,46 @@
             </form>
         </div>
     @endif
-    <ul>
+    {{-- <ul>
         @foreach ($students as $student)
-            <li>{{ $student->name }} - {{ $student->results->first()?->position ?? 'N/A' }}</li>
+            <li>{{ $student->name }} - {{ $student->results->first()?->position ?? 'N/A' }} <a href="">view
+                    result</a></li>
         @endforeach
-    </ul>
-    {{ $students->links() }}
+    </ul> --}}
+
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($students as $student)
+                <tr>
+                    <td>{{ $student->name }}</td>
+                    <td>{{ $student->results->first()?->position ?? 'N/A' }}</td>
+                    <td>
+                        <form action="{{ route('results.student') }}" method="GET" target="_blank">
+                            @csrf
+
+                            <input type="hidden" name="student_id" value="{{ $student->id }}">
+                            <input type="hidden" name="term_id" value="{{ request('term_id') }}">
+                            <input type="hidden" name="session_year_id" value="{{ request('session_year_id') }}">
+
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+                                View Result
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <div>
+        {{ $students->links() }}
+    </div>
 
     <hr>
 
@@ -73,7 +107,13 @@
                     <td>{{ $data->term->name }} ({{ $data->sessionYear->name }}) </td>
                     <td>
                         <a href="{{ route('class_subject_terms.upload_score_form', $data) }}"
-                            class="btn btn-sm btn-warning">Upload result</a>
+                            class="btn btn-sm btn-warning">Upload score</a>
+
+                        <form action="{{ route('class_subject_terms.destroy', $data->id) }}" method="POST"
+                            onsubmit="return confirm('Are you sure?');">
+                            @csrf @method('DELETE')
+                            <button class="text-red-600 hover:underline">Delete</button>
+                        </form>
                     </td>
                 </tr>
             @endforeach
