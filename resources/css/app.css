@@ -9,3 +9,18 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+
+.form-control {
+    @apply bg-gray-200 border text-gray-800 border-gray-300    rounded-md focus:ring-slate-900 focus:border-slate-900  block w-full p-2.5 placeholder-gray-500 placeholder:italic 
+}
+.btn {
+    @apply block w-full rounded-md bg-[#0F1523] px-6 py-3 text-xs cursor-pointer font-medium capitalize leading-normal text-white shadow transition duration-150 ease-in-out focus:ring-4 focus:outline-none focus:ring-gray-300
+}
+.btn2 {
+    @apply flex items-center bg-yellow-300 text-[#0F1523] hover:bg-[#0F1523] hover:text-yellow-300 cursor-pointer transition-all duration-300 font-medium rounded-md whitespace-nowrap  px-4 py-2
+}
+
+.btn-danger {
+  @apply block w-full rounded-lg bg-red-900 px-6 py-3 text-xs font-medium capitalize leading-normal text-white shadow transition duration-150 ease-in-out
+}

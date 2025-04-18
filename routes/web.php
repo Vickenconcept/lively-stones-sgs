@@ -11,6 +11,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentScoreController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TermController;
+use App\Models\Classroom;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('home');
 
     
+    Route::post('/students/promote', [StudentController::class, 'promote'])->name('students.promote');
     Route::resource('students', StudentController::class);
     Route::resource('classrooms', ClassroomController::class);
     Route::resource('subjects', SubjectController::class);
@@ -58,8 +60,11 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
+Route::get('/get-students/{classroom}', [StudentController::class, 'getStudentsByClass']);
+
 Route::get('/results/select', function () {
     return view('results.select', [
+        'classrooms' => Classroom::all(),
         'terms' => \App\Models\Term::all(),
         'sessions' => \App\Models\SessionYear::all(),
     ]);

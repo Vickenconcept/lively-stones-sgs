@@ -36,7 +36,7 @@ class StudentController extends Controller
         ]);
 
         Student::create($request->all());
-        return redirect()->route('students.index');
+        return redirect()->route('students.index')->with('success', 'Registered Successfully');
     }
 
     public function edit(Student $student)
@@ -48,8 +48,38 @@ class StudentController extends Controller
     public function update(Request $request, Student $student)
     {
         $student->update($request->all());
-        return redirect()->route('students.index');
+        return redirect()->route('students.index')->with('success', 'Updated Successfully');
     }
+
+    public function getStudentsByClass($classroomId)
+    {
+        $students = Student::where('classroom_id', $classroomId)->get(['id', 'name']);
+        return response()->json($students);
+    }
+
+    public function promote(Request $request)
+    {
+        $studentIds = $request->input('students', []);
+
+        dd($studentIds);
+        foreach ($studentIds as $id) {
+            $student = Student::find($id);
+            if (!$student) continue;
+
+            $currentClass = $student->classroom;
+            if (!$currentClass || !$currentClass->promotion_order) continue;
+
+            $nextClass = Classroom::where('promotion_order', $currentClass->promotion_order + 1)->first();
+
+            if ($nextClass) {
+                $student->classroom_id = $nextClass->id;
+                $student->save();
+            }
+        }
+
+        return back()->with('success', 'Students promoted successfully!');
+    }
+
 
     public function destroy(Student $student)
     {

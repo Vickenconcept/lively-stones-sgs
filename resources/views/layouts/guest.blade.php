@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-white">
+<html lang="en" class="">
 
 <head>
     {{-- <x-seo::meta /> --}}
@@ -9,11 +9,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 
-    <title>Influence</title>
+    <title>Lively Stones</title>
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
 
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -27,8 +28,8 @@
 
 </head>
 
-<body class="h-full">
-
+<body class="h-full font-['Poppins'] bg-slate-50">
+    
     {{ $slot }}
 
     <script>

@@ -22,7 +22,7 @@ class SessionYearController extends Controller
             'start_date' => 'required',
             'end_date' => 'required',
         ]));
-        return redirect()->route('session_years.index')->with('success', 'session year updated successfully.');
+        return redirect()->route('session_years.index')->with('success', 'Session year updated successfully.');
     }
     public function edit(SessionYear $sessionYear)
     {
@@ -35,11 +35,11 @@ class SessionYearController extends Controller
             'start_date' => 'required',
             'end_date' => 'required',
         ]));
-        return redirect()->route('session_years.index')->with('success', 'session year updated successfully.');
+        return redirect()->route('session_years.index')->with('success', 'Session year updated successfully.');
     }
     public function destroy(SessionYear $SessionYear)
     {
         $SessionYear->delete();
-        return back();
+        return back()->with('success','Deleted Successfully');
     }
 }

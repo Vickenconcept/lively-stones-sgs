@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('classrooms', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // e.g., JSS 1, JSS 2
+            $table->integer('promotion_order')->nullable();
             $table->timestamps();
         });
     }

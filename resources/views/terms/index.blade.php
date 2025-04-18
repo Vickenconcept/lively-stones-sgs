@@ -1,41 +1,35 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-6">Terms</h1>
-
-    <!-- Success Message -->
-    @if(session('success'))
-        <div class="bg-green-500 text-white p-4 mb-4 rounded">
-            {{ session('success') }}
-        </div>
-    @endif
-
+<div class="max-w-2xl mx-auto p-6">
     <!-- Add New Term Button -->
-    <div class="mb-4 text-right">
-        <a href="{{ route('terms.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Add New Term
+    <div class="mb-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold mb-6">Terms</h1>
+        <a href="{{ route('terms.create') }}" onclick="return false;">
+           <button class="btn2 !cursor-not-allowed" disabled>
+            + Add New Term
+           </button>
         </a>
     </div>
 
     <!-- Terms Table -->
-    <div class="overflow-hidden bg-white shadow sm:rounded-lg">
+    <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
         <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-100">
                 <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
                         Term Name
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
                         Description
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
                         Actions
                     </th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-                @foreach($terms as $term)
+                @forelse($terms as $term)
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{ $term->name }}
@@ -44,19 +38,31 @@
                             {{ $term->description }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="{{ route('terms.edit', $term->id) }}" class="text-blue-600 hover:text-blue-900">
-                                Edit
-                            </a>
-                            <form action="{{ route('terms.destroy', $term->id) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900 ml-4">
-                                    Delete
-                                </button>
-                            </form>
+                            <div class="flex space-x-3">
+                                <a href="{{ route('terms.edit', $term->id) }}" onclick="return false;" class="bg-green-900 text-white px-3 text-xs py-2 rounded hover:underline !cursor-not-allowed" disabled>
+                                    Edit
+                                </a>
+                                
+                                <form action="{{ route('terms.destroy', $term->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer !cursor-not-allowed" disabled>
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
-                @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="3" class="bg-white text-center font-semibold p-5">
+                            <div>
+                                <i class='bx bxs-school text-3xl'></i>
+                            </div>
+                            <p>No Active Term</p>
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>

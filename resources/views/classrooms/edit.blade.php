@@ -10,21 +10,15 @@
 
         <div>
             <label for="name" class="block font-medium">Classroom Name</label>
-            <input type="text" name="name" id="name" class="w-full border-gray-300 rounded shadow-sm" value="{{ old('name', $classroom->name) }}" required>
-            @error('name')
-                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-            @enderror
+            <input type="text" name="name" id="name" class="form-control" placeholder="eg. JSS 1" value="{{ old('name', $classroom->name) }}" required>
         </div>
 
         <div>
             <label for="capacity" class="block font-medium">Capacity</label>
-            <input type="number" name="capacity" id="capacity" class="w-full border-gray-300 rounded shadow-sm" value="{{ old('capacity', $classroom->capacity) }}" required>
-            @error('capacity')
-                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-            @enderror
+            <input type="number" name="capacity" id="capacity" class="form-control" placeholder="eg. 30" value="{{ old('capacity', $classroom->capacity) }}" required>
         </div>
 
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button type="submit" class="btn">
             Update
         </button>
     </form>

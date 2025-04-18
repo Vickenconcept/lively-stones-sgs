@@ -18,7 +18,8 @@ class TermController extends Controller
     public function store(Request $r)
     {
         Term::create($r->validate(['name' => 'required']));
-        return back();
+        return redirect()->route('terms.index')->with('success', 'Created successfully.');
+
     }
     public function edit(Term $term)
     {
@@ -27,11 +28,11 @@ class TermController extends Controller
     public function update(Request $r, Term $term)
     {
         $term->update($r->validate(['name' => 'required']));
-        return back();
+        return redirect()->route('terms.index')->with('success', 'Updated successfully.');
     }
     public function destroy(Term $term)
     {
         $term->delete();
-        return back();
+        return back()->with('success', 'Deleted Successfully');
     }
 }

@@ -20,9 +20,9 @@
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
 
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -46,16 +46,20 @@
     {{-- @livewireStyles --}}
 </head>
 
-<body class="h-screen ">
+<body class="h-screen font-['Poppins'] ">
     <div id="app" class="h-full  text-gray-700 ">
 
         <x-notification />
         <x-navbar />
         <x-sidebar />
-        <div class="h-full sm:ml-64 bg-white pt-20">
-           
+        <div class="h-full sm:ml-64 pt-16 bg-slate-900 ">
+            <div class="h-full md:rounded-2xl bg-slate-50 pr-1 overflow-hidden">
+                <div class="h-full overflow-auto">
+                    <x-session-msg />
+                    @yield('content')
+                </div>
+            </div>
             {{-- {{ $slot }} --}}
-            @yield('content')
         </div>
     </div>
 

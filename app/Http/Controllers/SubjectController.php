@@ -18,7 +18,7 @@ class SubjectController extends Controller
     public function store(Request $r)
     {
         Subject::create($r->validate(['name' => 'required']));
-        return redirect()->route('subjects.index')->with('success', 'subjects updated successfully.');
+        return redirect()->route('subjects.index')->with('success', 'Created successfully.');
     }
     public function edit(Subject $subject)
     {
@@ -27,11 +27,11 @@ class SubjectController extends Controller
     public function update(Request $r, Subject $subject)
     {
         $subject->update($r->validate(['name' => 'required']));
-        return redirect()->route('subjects.index')->with('success', 'subjects updated successfully.');
+        return redirect()->route('subjects.index')->with('success', 'updated successfully.');
     }
-    public function destroy(Subject $s)
+    public function destroy(Subject $subject)
     {
-        $s->delete();
-        return redirect()->route('subjects.index')->with('success', 'subjects updated successfully.');
+        $subject->delete();
+        return redirect()->route('subjects.index')->with('success', 'Deleted successfully.');
     }
 }

@@ -1,4 +1,4 @@
-<nav class="fixed top-0 z-40 w-full bg-slate-200 border-b border-slate-300 ">
+<nav class="fixed top-0 z-40 w-full bg-slate-900 border-b border-slate-300 ">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-start rtl:justify-end">
