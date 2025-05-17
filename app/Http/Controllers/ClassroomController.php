@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classroom;
+use App\Models\Result;
+use App\Models\Student;
 use Illuminate\Http\Request;
 
 class ClassroomController extends Controller
@@ -33,7 +35,8 @@ class ClassroomController extends Controller
                 $query->where('term_id', $termId)
                     ->where('session_year_id', $sessionYearId);
             }])
-            ->paginate(5);
+            // ->paginate(5);
+            ->paginate(10, ['*'], 'students');
 
         $classSubjectTerms = $classroom->classSubjectTerms()
             ->when($termId, function ($query) use ($termId) {
@@ -43,9 +46,21 @@ class ClassroomController extends Controller
                 $query->where('session_year_id', $sessionYearId);
             })
             ->with(['subject', 'term', 'sessionYear'])
+            // ->get();
+            ->paginate(10, ['*'], 'classSubjects');
+
+        $results = Result::where('classroom_id', $classroom->id)
+            ->where('term_id', $termId)
+            ->where('session_year_id', $sessionYearId)
             ->get();
 
-        return view('classrooms.show', compact('classroom', 'students', 'classSubjectTerms'));
+        $studentIds = $results->pluck('student_id')->unique();
+
+        // Get the students who appeared in those results (i.e., old students)
+        $oldStudents = Student::whereIn('id', $studentIds)
+            ->paginate(10, ['*'], 'oldStudents');
+
+        return view('classrooms.show', compact('classroom', 'students', 'classSubjectTerms', 'oldStudents'));
     }
 
 

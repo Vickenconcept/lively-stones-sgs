@@ -45,10 +45,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('home');
 
     
-    Route::post('/students/promote', [StudentController::class, 'promote'])->name('students.promote');
+    Route::post('promote/students', [StudentController::class, 'promote'])->name('students.promote');
     Route::resource('students', StudentController::class);
     Route::resource('classrooms', ClassroomController::class);
     Route::resource('subjects', SubjectController::class);
+    Route::post('/session-years/activate/{id}', [SessionYearController::class, 'status_update'])->name('session.active');
     Route::resource('session_years', SessionYearController::class);
     Route::resource('terms', TermController::class);
     Route::get('/class_subject_terms/{classSubjectTerm}/upload-score', [ClassSubjectTermController::class, 'uploadScoreForm'])->name('class_subject_terms.upload_score_form');

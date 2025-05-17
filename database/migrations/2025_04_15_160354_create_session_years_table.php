@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('start_date')->nullable();
             $table->string('end_date')->nullable();
+            $table->enum('is_active', ['0','1'])->default('0');
             $table->timestamps();
         });
     }

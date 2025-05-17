@@ -16,14 +16,15 @@
                 <a href="https://flowbite.com" class="flex ms-2 md:me-24 hidden md:flex">
                     <img src="{{ asset('images/logo.svg') }}" class="h-8 me-3" alt="FluenceGrid Logo" />
                 </a>
+                
                 <div>
-                    <h2 class="text-sm  md:text-2xl font-medium ml-5 capitalize">
+                    <h2 class="text-sm  md:text-2xl font-medium ml-5 capitalize text-gray-50">
                         @yield('title')
                     </h2>
                 </div>
             </div>
             <div class="flex items-center space-x-5">
-               
+
 
                 {{-- <div class="flex items-center ms-3">
                     <div class="flex items-center space-x-2"  aria-expanded="false" data-dropdown-toggle="dropdown-user" id="profile_avatar">

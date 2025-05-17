@@ -61,7 +61,7 @@ class StudentController extends Controller
     {
         $studentIds = $request->input('students', []);
 
-        dd($studentIds);
+        // dd($studentIds);
         foreach ($studentIds as $id) {
             $student = Student::find($id);
             if (!$student) continue;

@@ -43,14 +43,18 @@
                     <div>
                         <label for="session_year_id" class="text-sm font-semibold">Session year</label>
                         <div>
-                            <select name="session_year_id" id="session_year_id" class="form-control">
-                                @foreach (\App\Models\SessionYear::all() as $session_year)
-                                    <option value="{{ $session_year->id }}"
-                                        {{ request('session_year_id') == $session_year->id ? 'selected' : '' }}>
-                                        {{ $session_year->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @php
+                            $selectedSessionId = request('session_year_id') ?? session('session_year_id');
+                        @endphp
+
+                        <select name="session_year_id" id="session_year_id" class="form-control">
+                            @foreach (\App\Models\SessionYear::all() as $session_year)
+                                <option value="{{ $session_year->id }}"
+                                    {{ $selectedSessionId == $session_year->id ? 'selected' : '' }}>
+                                    {{ $session_year->name }}
+                                </option>
+                            @endforeach
+                        </select>
                         </div>
                     </div>
 

@@ -1,16 +1,16 @@
  <x-guest-layout>
-     <div class="min-w-screen min-h-screen bg-white  flex items-center justify-center px-1 md:px-5 py-5">
+     <div class="min-w-screen min-h-screen bg-slate-300  flex items-center justify-center px-1 md:px-5 py-5">
          <div class=" text-gray-500  w-full  " style="max-width:1000px">
 
 
-             <div class="items-end w-[90%] mx-auto  bg-[#CD89FF] rounded-3xl p-20 hidden lg:flex">
+             <div class="items-end w-[90%] mx-auto  bg-blue-950 rounded-3xl p-20 hidden lg:flex">
 
              </div>
-             <div class="items-end w-[96%] mx-auto bg-[#525FFD] rounded-3xl p-20 hidden lg:flex lg:-mt-36">
+             <div class="items-end w-[96%] mx-auto bg-slate-900 rounded-3xl p-20 hidden lg:flex lg:-mt-36">
 
              </div>
 
-             <div class="md:flex items-center lg:items-end 1-full  bg-[#B8FFAB] rounded-3xl px-3 md:px-10 lg:-mt-36">
+             <div class="md:flex items-center lg:items-end 1-full  bg-gray-50 rounded-3xl px-3 md:px-10 lg:-mt-36 shadow-xl">
                  <div class="w-full md:w-1/2 hidden md:flex">
                      <img src="{{ asset('images/login-image.png') }}" alt="">
                  </div>
@@ -26,17 +26,8 @@
                                  <img src="{{ asset('images/logo.svg') }}" alt="">
                              </div>
                              <h1 class="font-bold text-2xl text-gray-900">Sign in to your Account</h1>
-                             <p>Please enter your details</p>
+                             <p class="text-gray-800">Please enter your details</p>
                          </div>
-                         {{-- @if ($errors->any())
-                             <div class="alert alert-danger">
-                                 <ul class="text-red-400 bg-red-200 p-2 rounded-md">
-                                     @foreach ($errors->all() as $error)
-                                         <li>{{ $error }}</li>
-                                     @endforeach
-                                 </ul>
-                             </div>
-                         @endif --}}
 
                          <x-session-msg />
 
@@ -44,14 +35,14 @@
                          <div>
                              <div class="flex -mx-3">
                                  <div class="w-full px-3 mb-5">
-                                     <label for="" class="text-xs font-semibold px-1">Email</label>
+                                     <label for="" class="text-xs font-semibold px-1 text-gray-800">Email</label>
                                      <div class="flex">
                                          <div
                                              class="w-10 z-10 pl-1 text-center pointer-events-none flex items-center justify-center">
                                              <i class="mdi mdi-email-outline text-gray-400 text-lg"></i>
                                          </div>
                                          <input type="email"
-                                             class="w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border-2 border-gray-200 outline-none focus:border-black ring-0"
+                                             class="w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border-2 border-gray-800 bg-slate-200 outline-none focus:border-slate-900 ring-0"
                                              placeholder="email@example.com" name="email"
                                              value="{{ old('email') }}">
                                      </div>
@@ -61,7 +52,7 @@
 
                              <div class="flex -mx-3">
                                  <div class="w-full px-3 mb-5">
-                                     <label for="" class="px-1 text-xs font-semibold">Password</label>
+                                     <label for="" class="px-1 text-xs font-semibold text-gray-800">Password</label>
                                      <div class="">
                                          <div
                                              class="z-10 flex items-center justify-center w-10 pl-1 text-center pointer-events-none">
@@ -69,7 +60,7 @@
                                          </div>
                                          <div class="relative">
                                              <input type="password"
-                                                 class="block w-full py-2 pl-5 pr-10 text-sm text-gray-900 border-2  rounded-lg border-gray-200  outline-none focus:border-black ring-0 "
+                                                 class="block w-full py-2 pl-5 pr-10 text-sm text-gray-900 border-2  rounded-lg border-gray-800 bg-slate-200  outline-none focus:border-slate-900 ring-0 "
                                                  placeholder="Enter password" name="password" id="password" />
 
 
@@ -88,7 +79,7 @@
                              <div class="flex -mx-3">
                                  <div class="w-full px-3 mb-5">
                                      <button
-                                         class="block w-full  mx-auto bg-black hover:bg-slate-900 focus:bg-slate-900  text-white rounded-lg px-6 py-3 font-medium flex justify-between transition duration-500 ease-in-out">
+                                         class="block w-full  mx-auto bg-slate-900 hover:bg-slate-900 focus:bg-slate-900  text-white rounded-lg px-6 py-3 font-medium flex justify-between transition duration-500 ease-in-out">
                                          <span>
                                              <span id="hiddenText" class="hidden">
                                                  <i class='bx bx-loader-alt animate-spin'></i>
@@ -106,7 +97,7 @@
                                      </button>
                                  </div>
                              </div>
-                             <div class="text-right hover:text-black ring-0 font-semibold underline text-sm">
+                             <div class="text-right hover:text-slate-900 ring-0 font-semibold underline text-sm text-gray-800">
                                  <a href="{{ route('password.request') }}">Forgot Password</a>
                              </div>
                          </div>

@@ -54,10 +54,26 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-3">
+                                    <form action="{{ route('session.active', $sessionYear->id) }}" method="POST">
+                                        @csrf
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="is_active" value="1" class="sr-only peer"
+                                                {{ $sessionYear->is_active ? 'checked' : '' }}
+                                                onchange="this.form.submit(); this.disabled = true;">
+                                            <div
+                                                class="w-11 z-0 h-6 bg-gray-400 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-400 rounded-full peer
+                                                       peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white
+                                                       after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300
+                                                       after:border after:rounded-full after:w-5 after:h-5 after:transition-all peer-checked:bg-green-400">
+                                            </div>
+                                        </label>
+                                    </form>
+
                                     <a href="{{ route('session_years.edit', $sessionYear->id) }}"
                                         class="bg-green-900 text-white px-3 text-xs py-2 rounded hover:underline ">
                                         Edit
                                     </a>
+
                                     <form action="{{ route('session_years.destroy', $sessionYear->id) }}" method="POST"
                                         class="inline">
                                         @csrf

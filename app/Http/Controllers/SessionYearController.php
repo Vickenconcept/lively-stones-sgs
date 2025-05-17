@@ -37,9 +37,23 @@ class SessionYearController extends Controller
         ]));
         return redirect()->route('session_years.index')->with('success', 'Session year updated successfully.');
     }
+
+    public function status_update(Request $request, $id)
+    {
+        SessionYear::where('is_active', '1')->update(['is_active' => '0']);
+
+        $session = SessionYear::findOrFail($id);
+        $session->is_active = '1';
+        $session->save();
+        
+        session()->put('session_year_id', $session->id);
+
+        return redirect()->route('session_years.index')->with('success', 'Session year updated successfully.');
+    }
+
     public function destroy(SessionYear $SessionYear)
     {
         $SessionYear->delete();
-        return back()->with('success','Deleted Successfully');
+        return back()->with('success', 'Deleted Successfully');
     }
 }

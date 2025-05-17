@@ -67,7 +67,7 @@ class ResultController extends Controller
                     'average' => $termAverage,
                     'grade' => $termGrade,
                     'position' => null,
-                    'c_avarage' => null,
+                    'c_average' => null,
                     'cumulative' => null,
                     'c_position' => null,
                 ]
@@ -101,7 +101,7 @@ class ResultController extends Controller
                 ->where('classroom_id', $classroomId)
                 ->where('session_year_id', $sessionYearId)
                 ->update([
-                    'c_avarage' => $cumulativeAverage,
+                    'c_average' => $cumulativeAverage,
                     'cumulative' => $cumulativeTotal,
                     'c_position' => null,
                 ]);
@@ -317,7 +317,7 @@ class ResultController extends Controller
 
         $totalSum = optional($result)->cumulative;
 
-        $averageScore = optional($result)->c_avarage;
+        $averageScore = optional($result)->c_average;
         $cummulativePosition = optional($result)->c_position;
 
         return view('results.student', compact(

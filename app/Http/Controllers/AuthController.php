@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateUserRequest;
 use App\Mail\WelcomeMail;
+use App\Models\SessionYear;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -33,10 +34,16 @@ class AuthController extends Controller
                 : back()->with('error', 'Invalid Credentials');
         }
 
+        $activeSession = SessionYear::where('is_active', '1')->first();
+
+        if ($activeSession) {
+            session()->put('session_year_id', $activeSession->id);
+        }
+
         return redirect()->intended(route('home'));
     }
 
-    
+
 
 
 
