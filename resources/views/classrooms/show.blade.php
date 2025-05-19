@@ -5,6 +5,38 @@
 @stop
 @section('content')
     <div class="max-w-6xl mx-auto p-6">
+        @if (!session('session_year_id'))
+            <div class="fixed z-10 inset-0 overflow-y-auto">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 transition-opacity">
+                        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                    </div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
+                    <div
+                        class="inline-block align-bottom relative z-50 bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                        <div class="sm:flex sm:items-start">
+                            <div
+                                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-red-600" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Notice
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm leading-5 text-gray-500">
+                                        No active session yet! Select a session.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         {{-- <h2>Students</h2> --}}
         <div class="">
@@ -25,7 +57,7 @@
                     </div>
                     <div>
                         <label for="session_year_id" class="text-sm font-semibold">Session year</label>
-                        <div> 
+                        <div>
                             @php
                                 $selectedSessionId = request('session_year_id') ?? session('session_year_id');
                             @endphp
@@ -51,35 +83,131 @@
             </form>
         </div>
 
-        @if (request('term_id') && request('session_year_id'))
-            <div>
-                <form method="POST" action="{{ route('results.calculate') }}">
-                    @csrf
-                    <input type="hidden" name="classroom_id" value="{{ $classroom->id }}">
-                    <input type="hidden" name="term_id" value="{{ request('term_id') }}">
-                    <input type="hidden" name="session_year_id" value="{{ request('session_year_id') }}">
+        @if (request('session_year_id') == session('session_year_id'))
+            @if (request('term_id') && request('session_year_id'))
+                <div>
+                    <form method="POST" action="{{ route('results.calculate') }}">
+                        @csrf
+                        <input type="hidden" name="classroom_id" value="{{ $classroom->id }}">
+                        <input type="hidden" name="term_id" value="{{ request('term_id') }}">
+                        <input type="hidden" name="session_year_id" value="{{ request('session_year_id') }}">
 
-                    <button type="submit" class="btn2">
-                        <i class='bx bxs-category-alt text-xl mr-3'></i>
-                        <span>Calculate Results</span>
-                    </button>
-                </form>
-            </div>
+                        <button type="submit" class="btn2">
+                            <i class='bx bxs-category-alt text-xl mr-3'></i>
+                            <span>Calculate Results</span>
+                        </button>
+                    </form>
+                </div>
+            @endif
         @endif
 
 
         <main class="grid md:grid-cols-2 gap-3">
             <section>
-                <div class="my-5 flex justify-between">
-                    <h2 class="text-2xl font-medium ">Students</h2>
-                    <button type="button" id="trigger-promotion"
-                        class="bg-green-900 text-white px-4 py-2 rounded hover:underline hidden cursor-pointer">
-                        Promote Students
-                    </button>
-                </div>
-                <section>
-                    <form id="promote-form" method="POST" action="{{ route('students.promote') }}">
-                        @csrf
+                @if (request('session_year_id') == session('session_year_id'))
+                    <div class="my-5 flex justify-between">
+                        <h2 class="text-2xl font-medium ">Students</h2>
+                        <button type="button" id="trigger-promotion"
+                            class="bg-green-900 text-white px-4 py-2 rounded hover:underline hidden cursor-pointer">
+                            Promote Students
+                        </button>
+                    </div>
+                @endif
+
+                @if (request('session_year_id') == session('session_year_id'))
+                    {{-- Active students --}}
+                    <section>
+                        <form id="promote-form" method="POST" action="{{ route('students.promote') }}">
+                            @csrf
+                            <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            @if (request()->has('term_id') && request()->term_id == 3)
+                                                <th scope="col" class="px-3 py-3 ">
+                                                    <div class="flex items-center">
+                                                        <input id="checked-all" type="checkbox"
+                                                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2">
+                                                    </div>
+                                                </th>
+                                            @endif
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
+                                                Name
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
+                                                Position
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
+                                                Actions
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm divide-y divide-gray-300">
+                                        @forelse ($students as $student)
+                                            <tr>
+                                                @if (request()->has('term_id') && request()->term_id == 3)
+                                                    <td class="px-3 py-2">
+
+                                                        <div class="flex items-center">
+                                                            <input type="checkbox" name="students[]"
+                                                                value="{{ $student->id }}"
+                                                                class="student-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2">
+                                                        </div>
+
+                                                    </td>
+                                                @endif
+                                                <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {{ $student->name }}
+                                                </td>
+                                                <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {{ $student->results->first()?->position ?? 'N/A' }}</td>
+                                                <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {{-- <form action="{{ route('results.student') }}" method="GET" target="_blank">
+                                                    @csrf
+    
+                                                    <input type="hidden" name="student_id" value="{{ $student->id }}">
+                                                    <input type="hidden" name="term_id" value="{{ request('term_id') }}">
+                                                    <input type="hidden" name="session_year_id"
+                                                        value="{{ request('session_year_id') }}">
+    
+                                                    <button type="submit" 
+                                                        class="bg-blue-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer ">
+                                                        View Result
+                                                    </button>
+                                                </form> --}}
+                                                    <button type="button"
+                                                        class="bg-blue-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer "
+                                                        onclick="viewResult({{ $student->id }})">
+                                                        View Result
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="bg-white text-center font-semibold p-5">
+                                                    <div>
+                                                        <i class='bx bxs-group text-3xl'></i>
+                                                    </div>
+                                                    <p>No Active Student</p>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                        <div class="overflow-x-auto">
+                            <div class="mt-4">
+                                {{ $students->appends(request()->query())->links() }}
+                            </div>
+                        </div>
+                    </section>
+                @else
+                    {{-- old students --}}
+                    <section>
                         <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-100">
@@ -107,7 +235,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="text-sm divide-y divide-gray-300">
-                                    @forelse ($students as $student)
+                                    @forelse ($oldStudents as $student)
                                         <tr>
                                             @if (request()->has('term_id') && request()->term_id == 3)
                                                 <td class="px-3 py-2">
@@ -159,99 +287,13 @@
                                 </tbody>
                             </table>
                         </div>
-                    </form>
-                    <div class="overflow-x-auto">
-                        <div class="mt-4">
-                            {{ $students->appends(request()->query())->links() }}
+                        <div class="overflow-x-auto">
+                            <div class="mt-4">
+                                {{ $students->appends(request()->query())->links() }}
+                            </div>
                         </div>
-                    </div>
-                </section>
-                {{-- old students --}}
-                <section>
-                    <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    @if (request()->has('term_id') && request()->term_id == 3)
-                                        <th scope="col" class="px-3 py-3 ">
-                                            <div class="flex items-center">
-                                                <input id="checked-all" type="checkbox"
-                                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2">
-                                            </div>
-                                        </th>
-                                    @endif
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
-                                        Name
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
-                                        Position
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-sm divide-y divide-gray-300">
-                                @forelse ($oldStudents as $student)
-                                    <tr>
-                                        @if (request()->has('term_id') && request()->term_id == 3)
-                                            <td class="px-3 py-2">
-
-                                                <div class="flex items-center">
-                                                    <input type="checkbox" name="students[]" value="{{ $student->id }}"
-                                                        class="student-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2">
-                                                </div>
-
-                                            </td>
-                                        @endif
-                                        <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $student->name }}
-                                        </td>
-                                        <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $student->results->first()?->position ?? 'N/A' }}</td>
-                                        <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{-- <form action="{{ route('results.student') }}" method="GET" target="_blank">
-                                                    @csrf
-    
-                                                    <input type="hidden" name="student_id" value="{{ $student->id }}">
-                                                    <input type="hidden" name="term_id" value="{{ request('term_id') }}">
-                                                    <input type="hidden" name="session_year_id"
-                                                        value="{{ request('session_year_id') }}">
-    
-                                                    <button type="submit" 
-                                                        class="bg-blue-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer ">
-                                                        View Result
-                                                    </button>
-                                                </form> --}}
-                                            <button type="button"
-                                                class="bg-blue-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer "
-                                                onclick="viewResult({{ $student->id }})">
-                                                View Result
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="bg-white text-center font-semibold p-5">
-                                            <div>
-                                                <i class='bx bxs-group text-3xl'></i>
-                                            </div>
-                                            <p>No Active Student</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <div class="mt-4">
-                            {{ $students->appends(request()->query())->links() }}
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                @endif
 
             </section>
 

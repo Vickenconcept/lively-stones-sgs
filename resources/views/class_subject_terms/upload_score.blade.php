@@ -24,6 +24,9 @@
                             <th class="text-left py-2 px-2">CA (2)</th>
                             <th class="text-left py-2 px-2">Exam</th>
                             <th class="text-left py-2 px-2">Total</th>
+                            <th class="text-left py-2 px-2">Grade</th>
+                            <th class="text-left py-2 px-2">Position</th>
+                            <th class="text-left py-2 px-2">Remark</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -52,6 +55,24 @@
                                     <input type="number" name="scores[{{ $student->id }}][exam]" min="0"
                                         max="100" step="0.01" class="border p-1 rounded w-24 bg-gray-300"
                                         value="{{ old("scores.{$student->id}.total", $score->total_score ?? '') }}"
+                                        readonly disabled />
+                                </td>
+                                <td class="py-0.5 px-2 border-b border-gray-300">
+                                    <input type="text" name="scores[{{ $student->id }}][grade]" min="0"
+                                        max="100" step="0.01" class="border p-1 rounded w-24 bg-gray-300"
+                                        value="{{ old("scores.{$student->id}.grade", $score->grade ?? '') }}"
+                                        readonly disabled />
+                                </td>
+                                <td class="py-0.5 px-2 border-b border-gray-300">
+                                    <input type="text" name="scores[{{ $student->id }}][position]" min="0"
+                                        max="100" step="0.01" class="border p-1 rounded w-24 bg-gray-300"
+                                        value="{{ old("scores.{$student->id}.position", $score->position ?? '') }}"
+                                        readonly disabled />
+                                </td>
+                                <td class="py-0.5 px-2 border-b border-gray-300">
+                                    <input type="text" name="scores[{{ $student->id }}][remark]" min="0"
+                                        max="100" step="0.01" class="border p-1 rounded w-24 "
+                                        value="{{ old("scores.{$student->id}.remark", $score->remark ?? '') }}"
                                         readonly disabled />
                                 </td>
                             </tr>

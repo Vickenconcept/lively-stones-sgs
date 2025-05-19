@@ -124,6 +124,6 @@
     </div>
 
     <div>
-        {{ $classSubjectTerms->links() }}
+        {{ $classSubjectTerms->appends(request()->query())->links() }}
     </div>
 @endsection

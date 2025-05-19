@@ -1,10 +1,10 @@
 <x-guest-layout>
     <div class="py-5 px-10 !font-['Manrope']">
         @php
-            $className = strtoupper($student->classroom->name); // Convert to uppercase for consistency
+            $className = strtoupper($student->classroom->name); 
         @endphp
         <div class=" bg-white mx-auto max-w-[595px] p-5">
-            <div id="content" class="max-w-[595px] mx-auto bg-white py-8">
+            <div id="content" class="max-w-[595px] mx-auto bg-white pt-6">
                 <div class="flex justify-center mb-2">
                     <img src="{{ asset('images/coat-of-arm.jpeg') }}" alt="coat of arm" class=" w-28">
                 </div>
@@ -13,7 +13,7 @@
                     <h3 class="uppercase font-bold text-center text-sm">
                         @if (in_array($className, ['JSS1', 'JSS 1', 'JSS2', 'JSS 2', 'JSS3', 'JSS 3']))
                             <span>Junior</span>
-                        @elseif(in_array($className, ['SS1', 'SS 1', 'SS2', 'SS 2', 'SS3', 'SS 3']))
+                        @elseif(in_array($className, ['SSS1', 'SSS 1', 'SSS2', 'SSS 2', 'SSS3', 'SSS 3']))
                             <span>Senior</span>
                         @else
                             <span>Unknown Category</span>
@@ -42,7 +42,9 @@
                     <div class="text-sm mb-4">
                         <div class="flex justify-between items-center border-b">
                             {{-- <p>Grade: {{ $result->grade }}</p> --}}
-                            <p class="font-semibold">Position: <span class=" font-medium">{{ $result->position }}</span>
+                            <p class="font-semibold">Position: <span
+                                    class=" font-medium mr-3">{{ $result->position }}</span> out of: <span
+                                    class=" font-medium">{{ $totalStudents }}</span></p>
                             <p class="font-semibold">Class: <span
                                     class=" font-medium">{{ $student->classroom->name ?? 'N/A' }}</span>
                             </p>
@@ -67,28 +69,47 @@
 
 
                 {{-- <h3 class="text-xl font-semibold mt-6 mb-2">Subject Scores</h3> --}}
-                <div class="grid grid-cols-5 border">
-                    <div class="col-span-3">
+                <div class=" border">
+                    <div class="">
                         @if ($scores->count())
                             <table class="w-full border border-gray-300  text-xs">
-                                <thead class="">
+                                <thead class="uppercase">
                                     <tr>
-                                        <th class="p-2 border text-left">Subject</th>
-                                        <th class="p-2 border">CA1 </th>
-                                        <th class="p-2 border">CA2 </th>
-                                        <th class="p-2 border">Exam </th>
-                                        <th class="p-2 border">Total</th>
+                                        <th class="p-2 border border-slate-700 shadow text-left"></th>
+                                        <th class="p-2 border border-slate-700 shadow text-left">Subject</th>
+                                        <th class="p-2 border border-slate-700 shadow">CA1 </th>
+                                        <th class="p-2 border border-slate-700 shadow">CA2 </th>
+                                        <th class="p-2 border border-slate-700 shadow">Exam </th>
+                                        <th class="p-2 border border-slate-700 shadow">Total</th>
+                                        <th class="p-2 border border-slate-700 shadow">Grade</th>
+                                        <th class="p-2 border border-slate-700 shadow">Position</th>
+                                        <th class="p-2 border border-slate-700 shadow">Remark</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($scores as $score)
                                         <tr>
-                                            <td class="p-2 border font-semibold">{{ $score->subject->name ?? 'N/A' }}
+                                            <td
+                                                class="py-2 px-1 border border-slate-700 shadow font-semibold text-center">
+                                                {{ $loop->index + 1 }}
                                             </td>
-                                            <td class="p-2 border">{{ $score->ca1_score }}</td>
-                                            <td class="p-2 border">{{ $score->ca2_score }}</td>
-                                            <td class="p-2 border">{{ $score->exam_score }}</td>
-                                            <td class="p-2 border">{{ $score->total_score }}</td>
+                                            <td class="py-2 px-1 border border-slate-700 shadow font-semibold">
+                                                {{ $score->subject->name ?? 'N/A' }}
+                                            </td>
+                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
+                                                {{ $score->ca1_score }}</td>
+                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
+                                                {{ $score->ca2_score }}</td>
+                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
+                                                {{ $score->exam_score }}</td>
+                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
+                                                {{ $score->total_score }}</td>
+                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
+                                                {{ $score->grade }}</td>
+                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
+                                                {{ $score->position }}</td>
+                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
+                                                {{ $score->remark }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -98,10 +119,10 @@
                         @endif
                     </div>
 
-                    <div class="text-xs col-span-2 ">
-                        <div class="border p-2 ">
+                    {{-- <div class="text-xs col-span-1 ">
+                        <div class=" p-2 ">
                             <p class="font-semibold mb-2">Key grades</p>
-                            <div class="grid grid-cols-2 gap-1">
+                            <div class="">
                                 <p class="">
                                     <span class="font-semibold">A</span>
                                     <span>=</span>
@@ -110,57 +131,87 @@
                                 <p class="">
                                     <span class="font-semibold">B</span>
                                     <span>=</span>
-                                    <span class="font-semibold">70 - 100</span>
+                                    <span class="font-semibold">60 - 69</span>
                                 </p>
                                 <p class="">
                                     <span class="font-semibold">C</span>
                                     <span>=</span>
-                                    <span class="font-semibold">70 - 100</span>
+                                    <span class="font-semibold">50 - 59</span>
                                 </p>
                                 <p class="">
                                     <span class="font-semibold">D</span>
                                     <span>=</span>
-                                    <span class="font-semibold">70 - 100</span>
+                                    <span class="font-semibold">45 - 49</span>
                                 </p>
                                 <p class="">
                                     <span class="font-semibold">E</span>
                                     <span>=</span>
-                                    <span class="font-semibold">70 - 100</span>
+                                    <span class="font-semibold">40 - 44</span>
                                 </p>
                                 <p class="">
                                     <span class="font-semibold">F</span>
                                     <span>=</span>
-                                    <span class="font-semibold">70 - 100</span>
+                                    <span class="font-semibold">39 below</span>
                                 </p>
                             </div>
                         </div>
-                        <div class="border px-2 p-5 space-y-5 ">
-                            <div class=" ">
-                                <p class="font-semibold">Form teacher's report: </p>
-                                <br>
-                                <hr>
-                                <br>
-                                <hr>
-                                <br>
-                                <hr>
-                            </div>
-                            <div class=" ">
-                                <p class="font-semibold">Princeipal's report: </p>
-                                <br>
-                                <hr>
-                                <br>
-                                <hr>
-                                <br>
-                                <hr>
-                            </div>
-                        </div>
+                       
 
+                    </div> --}}
+
+                </div>
+                <div class="py-4 space-y-5 text-xs uppercase">
+                    <div class="border-b pb-1 flex space-x-2  ">
+                        <p class="font-semibold mb-2">Key grades</p>
+
+                        <p class="">
+                            <span class="">A</span>
+                            <span>:</span>
+                            <span class="">70 - 100 | </span>
+                        </p>
+                        <p class="">
+                            <span class="">B</span>
+                            <span>:</span>
+                            <span class="">60 - 69 | </span>
+                        </p>
+                        <p class="">
+                            <span class="">C</span>
+                            <span>:</span>
+                            <span class="">50 - 59 | </span>
+                        </p>
+                        <p class="">
+                            <span class="">D</span>
+                            <span>:</span>
+                            <span class="">45 - 49 | </span>
+                        </p>
+                        <p class="">
+                            <span class="">E</span>
+                            <span>:</span>
+                            <span class="">40 - 44 | </span>
+                        </p>
+                        <p class="">
+                            <span class="">F</span>
+                            <span>:</span>
+                            <span class="">39 - 0</span>
+                        </p>
+                    </div>
+                    <div class=" flex items-end space-x-2">
+                        <p class="font-semibold whitespace-nowrap">Form teacher's remark: </p>
+                        <hr class="w-full">
+                    </div>
+                    <div class=" flex items-end space-x-2">
+                        <p class="font-semibold whitespace-nowrap">Princeipal's remark: </p>
+                        <hr class="w-full">
+                    </div>
+                    <div class=" ">
+                        <p class="font-semibold">Next term begins: </p>
                     </div>
                 </div>
 
 
+
                 @if ($termId == 3)
-                    <div class="mt-6  p-4 rounded mt-80">
+                    <div class="mt-6 rounded mt-32">
                         <h2 class=" text-xs mb-4">Combined Term Scores</h2>
                         <div class="flex justify-center mb-2">
                             <img src="{{ asset('images/coat-of-arm.jpeg') }}" alt="coat of arm" class=" w-28">
@@ -196,42 +247,49 @@
 
                         <div class="text-sm mb-4">
                             <p class="font-semibold border-b ">postion: <span
-                                    class="font-medium">{{ $cummulativePosition }}</span></p>
+                                    class="font-medium mr-3">{{ $cummulativePosition }}</span> out of: <span
+                                    class=" font-medium">{{ $totalStudents }}</span></p>
                             <div class="flex items-center justify-between border-b">
                                 <p class="font-semibold">Total: <span class="font-medium">{{ $totalSum }}</span>
                                 </p>
-                                <p class="font-semibold">Avarage: <span class="font-medium">{{ $averageScore }}</span>
+                                <p class="font-semibold">Avarage: <span
+                                        class="font-medium">{{ $averageScore }}</span>
                                 </p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-5 border">
-                            <div class="col-span-3 ">
+                        <div class=" border">
+                            <div class=" ">
                                 <table class="w-full text-sm ">
-                                    <thead class="">
+                                    <thead class="uppercase">
                                         <tr>
+                                            <th class="p-2 text-left border"></th>
                                             <th class="p-2 text-left border">Subject</th>
-                                            <th class="p-2 text-left border">1st Term</th>
-                                            <th class="p-2 text-left border">2nd Term</th>
-                                            <th class="p-2 text-left border">3rd Term</th>
+                                            <th class="p-2 text-left border">First Term</th>
+                                            <th class="p-2 text-left border">Second Term</th>
+                                            <th class="p-2 text-left border">Third Term</th>
                                             <th class="p-2 text-left border">Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse ($groupedScores as $subjectData)
                                             <tr class="border-t">
-                                                <td class="p-2 border font-semibold">{{ $subjectData['subject'] }}
+                                                <td class="py-2 px-2 border font-semibold text-center">
+                                                    {{ $loop->index + 1 }}
                                                 </td>
-                                                <td class="p-2 border">
+                                                <td class="py-2 px-2 border font-semibold">
+                                                    {{ $subjectData['subject'] }}
+                                                </td>
+                                                <td class="py-2 px-2 border text-center">
                                                     {{ $subjectData['first'] != 0 ? $subjectData['first'] : 'N/A' }}
                                                 </td>
-                                                <td class="p-2 border">
+                                                <td class="py-2 px-2 border text-center">
                                                     {{ $subjectData['second'] != 0 ? $subjectData['second'] : 'N/A' }}
                                                 </td>
-                                                <td class="p-2 border">
+                                                <td class="py-2 px-2 border text-center">
                                                     {{ $subjectData['third'] != 0 ? $subjectData['third'] : 'N/A' }}
                                                 </td>
-                                                <td class="p-2 border font-semibold">
+                                                <td class="py-2 px-2 border text-center font-semibold">
                                                     {{ $subjectData['first'] + $subjectData['second'] + $subjectData['third'] }}
                                                 </td>
                                             </tr>
@@ -246,8 +304,8 @@
                                 </table>
                             </div>
 
-                            <div class="text-xs col-span-2">
-                                <div class="border p-2 ">
+                            {{-- <div class="text-xs col-span-1"> --}}
+                            {{-- <div class="border p-2 ">
                                     <p class="font-semibold mb-2">Key grades</p>
                                     <div class="grid grid-cols-2 gap-1">
                                         <p class="">
@@ -285,7 +343,7 @@
 
                                 <div class="border px-2 p-5 space-y-5 ">
                                     <div class=" ">
-                                        <p class="font-semibold">Form teacher's report: </p>
+                                        <p class="font-semibold">Form teacher's remark: </p>
                                         <br>
                                         <hr>
                                         <br>
@@ -294,7 +352,7 @@
                                         <hr>
                                     </div>
                                     <div class=" ">
-                                        <p class="font-semibold">Princeipal's report: </p>
+                                        <p class="font-semibold">Princeipal's remark: </p>
                                         <br>
                                         <hr>
                                         <br>
@@ -302,9 +360,9 @@
                                         <br>
                                         <hr>
                                     </div>
-                                </div>
+                                </div> --}}
 
-                            </div>
+                            {{-- </div> --}}
                         </div>
                     </div>
 

@@ -12,6 +12,7 @@ use App\Http\Controllers\StudentScoreController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TermController;
 use App\Models\Classroom;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,7 +45,7 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('home');
 
-    
+
     Route::post('promote/students', [StudentController::class, 'promote'])->name('students.promote');
     Route::resource('students', StudentController::class);
     Route::resource('classrooms', ClassroomController::class);
@@ -63,14 +64,25 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/get-students/{classroom}', [StudentController::class, 'getStudentsByClass']);
 
-Route::get('/results/select', function () {
-    return view('results.select', [
-        'classrooms' => Classroom::all(),
-        'terms' => \App\Models\Term::all(),
-        'sessions' => \App\Models\SessionYear::all(),
-    ]);
-})->name('results.select');
+// Route::get('/results/select', function () {
+//     return view('results.select', [
+//         'classrooms' => Classroom::all(),
+//         'terms' => \App\Models\Term::all(),
+//         'sessions' => \App\Models\SessionYear::all(),
+//     ]);
+// })->name('results.select');
 
 
-Route::get('/results/student', [ResultController::class, 'viewStudentResult'])
-    ->name('results.student');
+// Route::get('/results/student', [ResultController::class, 'viewStudentResult'])
+//     ->name('results.student');
+
+Route::middleware(['throttle:60,1'])->group(function () {
+    Route::get('/results/select', function () {
+        $classrooms = Cache::remember('classrooms_all', 3600, fn() => Classroom::all());
+        $terms = Cache::remember('terms_all', 3600, fn() => \App\Models\Term::all());
+        $sessions = Cache::remember('sessions_all', 3600, fn() => \App\Models\SessionYear::all());
+        return view('results.select', compact('classrooms', 'terms', 'sessions'));
+    })->name('results.select');
+
+    Route::get('/results/student', [ResultController::class, 'viewStudentResult'])->name('results.student');
+});

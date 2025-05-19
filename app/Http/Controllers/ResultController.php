@@ -19,7 +19,7 @@ class ResultController extends Controller
 
 
 
-   
+
     public function calculate(Request $request)
     {
         $request->validate([
@@ -96,7 +96,6 @@ class ResultController extends Controller
                 'cumulative' => $cumulativeTotal,
             ];
 
-            // Update ALL terms’ results with same cumulative (optional: only latest term if you want)
             Result::where('student_id', $student->id)
                 ->where('classroom_id', $classroomId)
                 ->where('session_year_id', $sessionYearId)
@@ -107,7 +106,6 @@ class ResultController extends Controller
                 ]);
         }
 
-        // ➕ Assign term positions based on total_score (per term)
         $results = Result::where('classroom_id', $classroomId)
             ->where('term_id', $termId)
             ->where('session_year_id', $sessionYearId)
@@ -133,7 +131,6 @@ class ResultController extends Controller
             $position++;
         }
 
-        // ✅ Assign cumulative position ONCE per student
         usort($cumulativeData, fn($a, $b) => $b['cumulative'] <=> $a['cumulative']);
 
         $cPos = 1;
@@ -151,7 +148,6 @@ class ResultController extends Controller
                 $sameCRank = $cPos;
             }
 
-            // Only update cumulative position on the 3rd term result row (or any term you choose)
             Result::where('student_id', $studentId)
                 ->where('classroom_id', $classroomId)
                 ->where('session_year_id', $sessionYearId)
@@ -179,39 +175,15 @@ class ResultController extends Controller
     }
 
 
-    // public function showStudentResult(Request $request, $studentId)
-    // {
-    //     $termId = $request->term_id;
-    //     $sessionYearId = $request->session_year_id;
-
-    //     $student = Student::with('classroom')->findOrFail($studentId);
-
-    //     // dd($student);
-    //     $results = Result::with('term', 'sessionYear')
-    //         ->where('student_id', $studentId)
-    //         ->when($termId, fn($query) => $query->where('term_id', $termId))
-    //         ->when($sessionYearId, fn($query) => $query->where('session_year_id', $sessionYearId))
-    //         ->orderBy('session_year_id')
-    //         ->orderBy('term_id')
-    //         ->get();
-
-    //     $scores = StudentScore::with('subject', 'term', 'sessionYear')
-    //         ->where('student_id', $studentId)
-    //         ->when($termId, fn($query) => $query->where('term_id', $termId))
-    //         ->when($sessionYearId, fn($query) => $query->where('session_year_id', $sessionYearId))
-    //         ->orderBy('session_year_id')
-    //         ->orderBy('term_id')
-    //         ->orderBy('subject_id')
-    //         ->get();
-
-    //     return view('results.student', compact('student', 'results', 'scores', 'termId', 'sessionYearId'));
-    // }
 
     public function viewStudentResult(Request $request)
     {
+
+
         $request->validate([
             'term_id' => 'required|exists:terms,id',
             'session_year_id' => 'required|exists:session_years,id',
+            'scratch_card_code' => auth()->check() ? ['nullable', 'alpha_num'] : ['required', 'alpha_num'],
         ]);
 
         $studentId = $request->student_id;
@@ -221,6 +193,13 @@ class ResultController extends Controller
 
 
         if (!auth()->check()) {
+            if (session()->has('viewed_result')) {
+                session()->forget('viewed_result');
+                return redirect('/results/select');
+            }
+
+            // Mark this session as having viewed the result page
+            session()->put('viewed_result', true);
             $code = ScratchCode::where('code', $inputCode)->first();
 
             if (!$code) {
@@ -244,18 +223,10 @@ class ResultController extends Controller
                     return back()->withErrors(['code' => 'This scratch code is not valid for the selected term or session year.']);
                 }
             }
-
-            $code->uses_left--;
-            $code->save();
         }
 
 
-
-
-
-
         $student = Student::with('classroom')->findOrFail($studentId);
-
 
 
         $result = Result::with('term', 'sessionYear')
@@ -271,7 +242,6 @@ class ResultController extends Controller
             ->orderBy('subject_id')
             ->get();
 
-        // Only if selected term is 3rd term, fetch total scores for 1st and 2nd
         $groupedScores = null;
         $totalSum = null;
         $averageScore = null;
@@ -304,14 +274,6 @@ class ResultController extends Controller
                     $groupedScores[$subjectId][$termLabel] = $score->total_score;
                 }
             }
-
-
-            // $subjectCount = count($groupedScores);
-
-            // foreach ($groupedScores as $subjectScores) {
-            //     $total = $subjectScores['first'] + $subjectScores['second'] + $subjectScores['third'];
-            // }
-
         }
 
 
@@ -319,6 +281,14 @@ class ResultController extends Controller
 
         $averageScore = optional($result)->c_average;
         $cummulativePosition = optional($result)->c_position;
+
+
+        if (!auth()->check()) {
+            $code->uses_left--;
+            $code->save();
+        }
+
+        $totalStudents = $student->classroom->students()->count();
 
         return view('results.student', compact(
             'student',
@@ -329,9 +299,8 @@ class ResultController extends Controller
             'groupedScores',
             'totalSum',
             'averageScore',
-            'cummulativePosition'
+            'cummulativePosition',
+            'totalStudents'
         ));
-
-        // return view('results.student', compact('student', 'result', 'scores', 'termId', 'sessionYearId'));
     }
 }

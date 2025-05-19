@@ -45,10 +45,10 @@
                                         Edit
                                     </a>
                                     <form action="{{ route('subjects.destroy', $subject->id) }}" method="POST"
-                                        class="inline">
+                                        class="inline" onsubmit="return confirm('Are you sure? All related data to this subject will be lost!');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit"
+                                        <button type="submit" 
                                             class="bg-red-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer">
                                             Delete
                                         </button>

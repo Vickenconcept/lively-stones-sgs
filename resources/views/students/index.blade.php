@@ -76,7 +76,7 @@
             </table>
         </div>
         <div class="mt-4">
-            {{ $students->links() }}
+            {{ $students->appends(request()->query())->links() }}
         </div>
 
     </div>

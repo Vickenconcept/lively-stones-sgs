@@ -9,9 +9,16 @@ use Illuminate\Support\Str;
 
 class ScratchCodeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $codes = ScratchCode::latest()->paginate(20);
+        $query = ScratchCode::query();
+
+        if ($request->has('uses_left') && $request->uses_left != "") {
+            $query->where('uses_left', (int)$request->uses_left);
+        }
+
+        $codes = $query->latest()->paginate(20);
+
         return view('scratch_codes.index', compact('codes'));
     }
 

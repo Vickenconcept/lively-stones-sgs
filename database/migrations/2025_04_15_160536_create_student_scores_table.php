@@ -13,12 +13,16 @@ return new class extends Migration
     {
         Schema::create('student_scores', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('subject_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('student_id')->constrained();
-            $table->foreignId('subject_id')->constrained();
+            // $table->foreignId('subject_id')->constrained();
             $table->foreignId('term_id')->constrained();
             $table->foreignId('session_year_id')->constrained()->onDelete('cascade');
             $table->integer('ca1_score')->default(0);
             $table->integer('ca2_score')->default(0);
+            $table->string('grade')->nullable();
+            $table->string('position')->nullable();
+            $table->string('remark')->nullable();
             $table->integer('exam_score')->default(0);
             $table->integer('total_score')->default(0);
             $table->timestamps();
