@@ -11,6 +11,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentScoreController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TermController;
+use App\Http\Controllers\UserController;
 use App\Models\Classroom;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
@@ -41,40 +42,35 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
-    Route::get('/home', function () {
-        return view('dashboard');
-    })->name('home');
+    Route::get('/home', [AuthController::class, 'dashboard'])->name('home')->middleware('role:super-admin');
 
 
     Route::post('promote/students', [StudentController::class, 'promote'])->name('students.promote');
-    Route::resource('students', StudentController::class);
-    Route::resource('classrooms', ClassroomController::class);
-    Route::resource('subjects', SubjectController::class);
+    Route::resource('students', StudentController::class)->middleware('permission:manage students');
+    Route::resource('classrooms', ClassroomController::class)->middleware(['permission:manage classes']);
+    Route::resource('subjects', SubjectController::class)->middleware('role:super-admin|admin');
     Route::post('/session-years/activate/{id}', [SessionYearController::class, 'status_update'])->name('session.active');
-    Route::resource('session_years', SessionYearController::class);
-    Route::resource('terms', TermController::class);
+    Route::resource('session_years', SessionYearController::class)->middleware('role:super-admin');
+    Route::resource('terms', TermController::class)->middleware('role:super-admin');
     Route::get('/class_subject_terms/{classSubjectTerm}/upload-score', [ClassSubjectTermController::class, 'uploadScoreForm'])->name('class_subject_terms.upload_score_form');
     Route::post('/class_subject_terms/{classSubjectTerm}/upload-score', [ClassSubjectTermController::class, 'uploadScore'])->name('class_subject_terms.upload_score');
-    Route::resource('class_subject_terms', ClassSubjectTermController::class);
+    Route::post('class-subject-terms/{classSubjectTerm}/upload-scores-csv', [ClassSubjectTermController::class, 'uploadScoresExcel'])
+        ->name('classSubjectTerms.uploadScoresCsv');
+    Route::resource('class_subject_terms', ClassSubjectTermController::class)->middleware('role:super-admin|admin');
 
-    Route::resource('/scratch-codes', ScratchCodeController::class);
+    Route::resource('/scratch-codes', ScratchCodeController::class)->middleware('role:super-admin');
     Route::post('/results/calculate', [ResultController::class, 'calculate'])->name('results.calculate');
+
+    Route::middleware('role:super-admin')->group(function () {
+        Route::resource('users', UserController::class);
+        Route::get('users/{user}/change-role', [UserController::class, 'changeRole'])->name('users.changeRole');
+        Route::put('users/{user}/update-role', [UserController::class, 'updateRole'])->name('users.updateRole');
+    });
 });
 
 
 Route::get('/get-students/{classroom}', [StudentController::class, 'getStudentsByClass']);
 
-// Route::get('/results/select', function () {
-//     return view('results.select', [
-//         'classrooms' => Classroom::all(),
-//         'terms' => \App\Models\Term::all(),
-//         'sessions' => \App\Models\SessionYear::all(),
-//     ]);
-// })->name('results.select');
-
-
-// Route::get('/results/student', [ResultController::class, 'viewStudentResult'])
-//     ->name('results.student');
 
 Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('/results/select', function () {

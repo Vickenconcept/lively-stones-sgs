@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('remark')->nullable();
             $table->integer('exam_score')->default(0);
             $table->integer('total_score')->default(0);
+            $table->string('edited_by')->nullable();
             $table->timestamps();
         });
     }

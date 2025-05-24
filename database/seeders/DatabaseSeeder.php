@@ -100,6 +100,9 @@ class DatabaseSeeder extends Seeder
     // }
     public function run()
     {
+        // Seed roles, permissions, and users first
+        $this->call(RolePermissionSeeder::class);
+
         // Step 1: Create terms
         $terms = collect(['1st', '2nd', '3rd'])->map(
             fn($term) =>
@@ -181,7 +184,7 @@ class DatabaseSeeder extends Seeder
                     }
 
                     /* -------------------------------------------
-   2️⃣  PASS 2  – Rank, grade & remark
+   2️⃣  PASS 2  – Rank, grade & remark
 -------------------------------------------*/
 
                     foreach ($positionBuckets as $bucket) {

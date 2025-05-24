@@ -26,15 +26,17 @@
             <div class="flex items-center space-x-5">
 
 
-                {{-- <div class="flex items-center ms-3">
+                <div class="flex items-center ms-3">
                     <div class="flex items-center space-x-2"  aria-expanded="false" data-dropdown-toggle="dropdown-user" id="profile_avatar">
                         <button type="button" id="profile_avatar"
-                            class="flex text-sm bg-gray-200 rounded-md focus:ring-4 focus:ring-gray-300 ">
+                            class="">
                             <span class="sr-only">Open user menu</span>
-                            <img class="w-10 h-10 rounded-md"
-                                src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8 text-white">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                              </svg>
+                              
                         </button>
-                        <div class="bg-white rounded-md px-3 py-1 w-48 truncate cursor-pointer hidden md:block" >
+                        <div class=" rounded-md px-3 py-1 w-48 truncate cursor-pointer hidden md:block text-white" >
                             <p class="text-sm font-semibold capitalize"> {{ auth()->user()->name }}</p>
                             <p class="text-xs">{{ auth()->user()->email }}</p>
                         </div>
@@ -50,17 +52,19 @@
                             </p>
                         </div>
                         <ul class="py-1" role="none">
+                            @role('super-admin')
                             <li>
                                 <a href="{{ route('home') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100  "
                                     role="menuitem">Dashboard</a>
                             </li>
-                            <li>
+                            @endrole
+                            {{-- <li>
                                 <a href="{{ route('profile') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ">
                                     <span class="text-sm ">Profile</span>
                                 </a>
-                            </li>
+                            </li> --}}
 
                             <li>
                                 <a href="{{ route('auth.logout') }}"
@@ -69,7 +73,7 @@
                             </li>
                         </ul>
                     </div>
-                </div> --}}
+                </div>
             </div>
         </div>
     </div>
