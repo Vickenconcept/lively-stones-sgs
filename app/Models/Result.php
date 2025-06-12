@@ -35,4 +35,9 @@ class Result extends Model
     {
         return $this->belongsTo(Subject::class);
     }
+
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
+    }
 }

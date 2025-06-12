@@ -90,6 +90,24 @@ class AuthController extends Controller
         $studentsCount = \App\Models\Student::count();
         $subjectsCount = \App\Models\Subject::count();
         $classesCount = \App\Models\Classroom::count();
-        return view('dashboard', compact('studentsCount', 'subjectsCount', 'classesCount'));
+        $batchesCount = \App\Models\Batch::count();
+        $teachersCount = \App\Models\User::role('teacher')->count();
+        $activeSession = \App\Models\SessionYear::where('is_active', '1')->first();
+        $recentStudents = \App\Models\Student::with(['classroom', 'batch'])->latest()->take(5)->get();
+        $recentScores = \App\Models\StudentScore::with(['student', 'subject'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('dashboard', compact(
+            'studentsCount',
+            'subjectsCount',
+            'classesCount',
+            'batchesCount',
+            'teachersCount',
+            'activeSession',
+            'recentStudents',
+            'recentScores'
+        ));
     }
 }

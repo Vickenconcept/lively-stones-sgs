@@ -44,6 +44,14 @@
 
                 @role(['super-admin', 'admin'])
                     <li>
+                        <a href="{{ route('batches.index') }}"
+                            class="flex items-center p-2 text-gray-900 rounded-lg  hover:bg-slate-900/50 group transition duration-500 ease-in-out {{ request()->routeIs('batches.index') ? 'bg-gradient-to-r from-slate-900 from-70%  to-slate-400 font-medium text-white hover:bg-gradient-to-br from-slate-900 from-70%  to-slate-400' : '' }}">
+                            <i class='bx bxs-group text-xl mr-2 text-gray-700 bg-slate-200 px-1 py-0.5 rounded-md'></i>
+                            <span class="">Batches</span>
+                        </a>
+                    </li>
+
+                    <li>
                         <a href="{{ route('subjects.index') }}"
                             class="flex items-center p-2 text-gray-900 rounded-lg  hover:bg-slate-900/50 group transition duration-500 ease-in-out {{ request()->routeIs('subjects.index') ? 'bg-gradient-to-r from-slate-900 from-70%  to-slate-400 font-medium text-white hover:bg-gradient-to-br from-slate-900 from-70%  to-slate-400' : '' }}">
                             <i class='bx bxs-book text-xl mr-2 text-gray-700 bg-slate-200 px-1 py-0.5 rounded-md'></i>

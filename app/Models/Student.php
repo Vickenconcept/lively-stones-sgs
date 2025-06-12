@@ -17,6 +17,11 @@ class Student extends Model
         return $this->belongsTo(Classroom::class);
     }
 
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
+    }
+
     public function scores()
     {
         return $this->hasMany(StudentScore::class);

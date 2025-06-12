@@ -20,6 +20,89 @@ class ResultController extends Controller
 
 
 
+    // public function calculate(Request $request)
+    // {
+    //     $request->validate([
+    //         'classroom_id' => 'required|exists:classrooms,id',
+    //         'term_id' => 'required|exists:terms,id',
+    //         'session_year_id' => 'required|exists:session_years,id',
+    //     ]);
+
+    //     $classroomId = $request->classroom_id;
+    //     $termId = $request->term_id;
+    //     $sessionYearId = $request->session_year_id;
+
+    //     // Get all batches for this classroom
+    //     $batches = \App\Models\Batch::where('classroom_id', $classroomId)->get();
+
+    //     foreach ($batches as $batch) {
+    //         // Get students in this batch
+    //         $students = Student::where('classroom_id', $classroomId)
+    //             ->where('batch_id', $batch->id)
+    //             ->get();
+
+    //         $cumulativeData = []; // Used for assigning cumulative positions later
+
+    //         foreach ($students as $student) {
+    //             $scores = StudentScore::where('student_id', $student->id)
+    //                 ->where('term_id', $termId)
+    //                 ->where('session_year_id', $sessionYearId)
+    //                 ->get();
+
+    //             $totalScore = $scores->sum('total_score');
+    //             $averageScore = $scores->avg('total_score');
+    //             $subjectCount = $scores->count();
+
+    //             if ($subjectCount > 0) {
+    //                 $cumulativeData[] = [
+    //                     'student_id' => $student->id,
+    //                     'total_score' => $totalScore,
+    //                     'average_score' => $averageScore,
+    //                 ];
+    //             }
+    //         }
+
+    //         // Sort by total score in descending order
+    //         usort($cumulativeData, function ($a, $b) {
+    //             return $b['total_score'] <=> $a['total_score'];
+    //         });
+
+    //         // Group students by their scores
+    //         $scoreGroups = [];
+    //         foreach ($cumulativeData as $data) {
+    //             $score = $data['total_score'];
+    //             if (!isset($scoreGroups[$score])) {
+    //                 $scoreGroups[$score] = [];
+    //             }
+    //             $scoreGroups[$score][] = $data;
+    //         }
+
+    //         // Assign positions
+    //         $position = 1;
+    //         foreach ($scoreGroups as $score => $students) {
+    //             $positionText = $this->ordinal($position);
+    //             foreach ($students as $student) {
+    //                 Result::updateOrCreate(
+    //                     [
+    //                         'student_id' => $student['student_id'],
+    //                         'term_id' => $termId,
+    //                         'session_year_id' => $sessionYearId,
+    //                     ],
+    //                     [
+    //                         'classroom_id' => $classroomId,
+    //                         'cumulative' => $student['total_score'],
+    //                         'c_average' => $student['average_score'],
+    //                         'c_position' => $positionText,
+    //                     ]
+    //                 );
+    //             }
+    //             $position += count($students);
+    //         }
+    //     }
+
+    //     return back()->with('success', 'Results calculated successfully with batch-based positions.');
+    // }
+
     public function calculate(Request $request)
     {
         $request->validate([
@@ -32,147 +115,156 @@ class ResultController extends Controller
         $termId = $request->term_id;
         $sessionYearId = $request->session_year_id;
 
-        $students = Student::whereHas('classroom', fn($q) => $q->where('classroom_id', $classroomId))->get();
+        // Get students in the classroom grouped by batch
+        $studentsByBatch = Student::where('classroom_id', $classroomId)
+            ->get()
+            ->groupBy('batch_id');
 
-        $cumulativeData = []; // ➕ used for assigning cumulative positions later
+        foreach ($studentsByBatch as $batchId => $students) {
+            $cumulativeData = [];
 
-        foreach ($students as $student) {
-            // TERM TOTAL & AVERAGE (for current term)
-            $scores = StudentScore::where('student_id', $student->id)
+            foreach ($students as $student) {
+                // TERM TOTAL & AVERAGE
+                $scores = StudentScore::where('student_id', $student->id)
+                    ->where('term_id', $termId)
+                    ->where('session_year_id', $sessionYearId)
+                    ->get();
+
+                $termTotal = $scores->sum('total_score');
+                $termSubjectCount = $scores->count();
+                $termAverage = $termSubjectCount > 0 ? round($termTotal / $termSubjectCount, 2) : 0;
+
+                $termGrade = match (true) {
+                    $termAverage >= 70 => 'A',
+                    $termAverage >= 60 => 'B',
+                    $termAverage >= 50 => 'C',
+                    $termAverage >= 40 => 'D',
+                    default => 'F',
+                };
+
+                Result::updateOrCreate(
+                    [
+                        'student_id' => $student->id,
+                        'classroom_id' => $classroomId,
+                        'term_id' => $termId,
+                        'session_year_id' => $sessionYearId,
+                    ],
+                    [
+                        'total_score' => $termTotal,
+                        'average' => $termAverage,
+                        'grade' => $termGrade,
+                        'position' => null,
+                        'c_average' => null,
+                        'cumulative' => null,
+                        'c_position' => null,
+                    ]
+                );
+
+                // CUMULATIVE (across all terms)
+                $allScores = StudentScore::where('student_id', $student->id)
+                    ->where('session_year_id', $sessionYearId)
+                    ->get();
+
+                $cumulativeTotal = $allScores->sum('total_score');
+                $subjectCount = $allScores->count();
+                $cumulativeAverage = $subjectCount > 0 ? round($cumulativeTotal / $subjectCount, 2) : 0;
+
+                $cumulativeData[] = [
+                    'student_id' => $student->id,
+                    'cumulative' => $cumulativeTotal,
+                ];
+
+                Result::where('student_id', $student->id)
+                    ->where('classroom_id', $classroomId)
+                    ->where('session_year_id', $sessionYearId)
+                    ->update([
+                        'c_average' => $cumulativeAverage,
+                        'cumulative' => $cumulativeTotal,
+                        'c_position' => null,
+                    ]);
+            }
+
+            // 🔢 ASSIGN TERM POSITION for this batch
+            $results = Result::whereIn('student_id', $students->pluck('id'))
+                ->where('classroom_id', $classroomId)
                 ->where('term_id', $termId)
                 ->where('session_year_id', $sessionYearId)
+                ->orderByDesc('total_score')
                 ->get();
 
-            $termTotal = $scores->sum('total_score');
-            $termSubjectCount = $scores->count();
-            $termAverage = $termSubjectCount > 0 ? round($termTotal / $termSubjectCount, 2) : 0;
+            $position = 1;
+            $lastScore = null;
+            $sameRank = 1;
 
-            $termGrade = match (true) {
-                $termAverage >= 70 => 'A',
-                $termAverage >= 60 => 'B',
-                $termAverage >= 50 => 'C',
-                $termAverage >= 40 => 'D',
-                default => 'F',
-            };
+            foreach ($results as $result) {
+                if ($lastScore !== null && $result->total_score === $lastScore) {
+                    $ordinalPosition = $this->ordinal($sameRank);
+                } else {
+                    $ordinalPosition = $this->ordinal($position);
+                    $sameRank = $position;
+                }
 
-            Result::updateOrCreate(
-                [
-                    'student_id' => $student->id,
-                    'classroom_id' => $classroomId,
-                    'term_id' => $termId,
-                    'session_year_id' => $sessionYearId,
-                ],
-                [
-                    'total_score' => $termTotal,
-                    'average' => $termAverage,
-                    'grade' => $termGrade,
-                    'position' => null,
-                    'c_average' => null,
-                    'cumulative' => null,
-                    'c_position' => null,
-                ]
-            );
+                $result->position = $ordinalPosition;
+                $result->save();
 
-            // ➕ CUMULATIVE (across all 3 terms)
-            $allScores = StudentScore::where('student_id', $student->id)
-                ->where('session_year_id', $sessionYearId)
-                ->get();
-
-            $cumulativeTotal = $allScores->sum('total_score');
-            $subjectCount = $allScores->count();
-            $cumulativeAverage = $subjectCount > 0 ? round($cumulativeTotal / $subjectCount, 2) : 0;
-
-            $cumulativeGrade = match (true) {
-                $cumulativeAverage >= 70 => 'A',
-                $cumulativeAverage >= 60 => 'B',
-                $cumulativeAverage >= 50 => 'C',
-                $cumulativeAverage >= 40 => 'D',
-                default => 'F',
-            };
-
-            // Save cumulative data (to be used for position later)
-            $cumulativeData[] = [
-                'student_id' => $student->id,
-                'cumulative' => $cumulativeTotal,
-            ];
-
-            Result::where('student_id', $student->id)
-                ->where('classroom_id', $classroomId)
-                ->where('session_year_id', $sessionYearId)
-                ->update([
-                    'c_average' => $cumulativeAverage,
-                    'cumulative' => $cumulativeTotal,
-                    'c_position' => null,
-                ]);
-        }
-
-        $results = Result::where('classroom_id', $classroomId)
-            ->where('term_id', $termId)
-            ->where('session_year_id', $sessionYearId)
-            ->orderByDesc('total_score')
-            ->get();
-
-        $position = 1;
-        $lastScore = null;
-        $sameRank = 1;
-
-        foreach ($results as $result) {
-            if ($lastScore !== null && $result->total_score === $lastScore) {
-                $ordinalPosition = $this->ordinal($sameRank);
-            } else {
-                $ordinalPosition = $this->ordinal($position);
-                $sameRank = $position;
+                $lastScore = $result->total_score;
+                $position++;
             }
 
-            $result->position = $ordinalPosition;
-            $result->save();
+            // 🔢 ASSIGN CUMULATIVE POSITION for this batch
+            usort($cumulativeData, fn($a, $b) => $b['cumulative'] <=> $a['cumulative']);
 
-            $lastScore = $result->total_score;
-            $position++;
-        }
+            $cPos = 1;
+            $lastCumulative = null;
+            $sameCRank = 1;
 
-        usort($cumulativeData, fn($a, $b) => $b['cumulative'] <=> $a['cumulative']);
+            foreach ($cumulativeData as $data) {
+                $studentId = $data['student_id'];
+                $cumulative = $data['cumulative'];
 
-        $cPos = 1;
-        $lastCumulative = null;
-        $sameCRank = 1;
+                if ($lastCumulative !== null && $cumulative === $lastCumulative) {
+                    $cOrdinal = $this->ordinal($sameCRank);
+                } else {
+                    $cOrdinal = $this->ordinal($cPos);
+                    $sameCRank = $cPos;
+                }
 
-        foreach ($cumulativeData as $data) {
-            $studentId = $data['student_id'];
-            $cumulative = $data['cumulative'];
+                Result::where('student_id', $studentId)
+                    ->where('classroom_id', $classroomId)
+                    ->where('session_year_id', $sessionYearId)
+                    ->orderByDesc('term_id')
+                    ->first()?->update([
+                        'c_position' => $cOrdinal
+                    ]);
 
-            if ($lastCumulative !== null && $cumulative === $lastCumulative) {
-                $cOrdinal = $this->ordinal($sameCRank);
-            } else {
-                $cOrdinal = $this->ordinal($cPos);
-                $sameCRank = $cPos;
+                $lastCumulative = $cumulative;
+                $cPos++;
             }
-
-            Result::where('student_id', $studentId)
-                ->where('classroom_id', $classroomId)
-                ->where('session_year_id', $sessionYearId)
-                ->orderByDesc('term_id') // assumes 3rd term is highest
-                ->first()?->update([
-                    'c_position' => $cOrdinal
-                ]);
-
-            $lastCumulative = $cumulative;
-            $cPos++;
         }
 
-        return back()->with('success', 'Results calculated, saved, and positions assigned successfully.');
+        return back()->with('success', 'Results calculated and batch-wise positions assigned successfully.');
     }
 
+
+
+    private function calculateGrade($average)
+    {
+        if ($average >= 70) return 'A';
+        if ($average >= 60) return 'B';
+        if ($average >= 50) return 'C';
+        if ($average >= 45) return 'D';
+        return 'F';
+    }
 
 
     private function ordinal($number)
     {
         $ends = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
-        if ((($number % 100) >= 11) && (($number % 100) <= 13))
-            return $number . 'th';
-        else
-            return $number . $ends[$number % 10];
+        return ((($number % 100) >= 11) && (($number % 100) <= 13))
+            ? $number . 'th'
+            : $number . $ends[$number % 10];
     }
+
 
 
 
@@ -288,7 +380,11 @@ class ResultController extends Controller
             $code->save();
         }
 
-        $totalStudents = $student->classroom->students()->count();
+        // $totalStudents = $student->classroom->students()->count();
+        $totalStudents = $student->classroom->students()
+            ->where('batch_id', $student->batch_id)
+            ->count();
+        $batchName = optional($student->batch)->name;
 
         return view('results.student', compact(
             'student',
@@ -300,7 +396,8 @@ class ResultController extends Controller
             'totalSum',
             'averageScore',
             'cummulativePosition',
-            'totalStudents'
+            'totalStudents',
+            'batchName'
         ));
     }
 }

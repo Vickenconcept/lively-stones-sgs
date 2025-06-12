@@ -46,7 +46,7 @@
                                     class=" font-medium mr-3">{{ $result->position }}</span> out of: <span
                                     class=" font-medium">{{ $totalStudents }}</span></p>
                             <p class="font-semibold">Class: <span
-                                    class=" font-medium">{{ $student->classroom->name ?? 'N/A' }}</span>
+                                    class=" font-medium">{{ $student->classroom->name ?? 'N/A' }} {{ $batchName }}</span>
                             </p>
                         </div>
                         <div class="flex justify-between items-center border-b">

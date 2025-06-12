@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained();
             $table->foreignId('subject_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('classroom_id')->constrained();
+            $table->foreignId('batch_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('term_id')->constrained();
             $table->foreignId('session_year_id')->constrained()->onDelete('cascade');
             $table->integer('total_score');

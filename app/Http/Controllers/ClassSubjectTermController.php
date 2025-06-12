@@ -10,6 +10,7 @@ use App\Models\StudentScore;
 use App\Models\Subject;
 use App\Models\Term;
 use App\Models\User;
+use App\Models\Batch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -86,7 +87,16 @@ class ClassSubjectTermController extends Controller
 
     public function uploadScoreForm(ClassSubjectTerm $classSubjectTerm)
     {
-        $students = $classSubjectTerm->classroom->students;
+        $batches = Batch::all();
+        $selectedBatchId = request('batch_id');
+
+        $query = $classSubjectTerm->classroom->students();
+
+        if ($selectedBatchId) {
+            $query->where('batch_id', $selectedBatchId);
+        }
+
+        $students = $query->get();
 
         $existingScores = \App\Models\StudentScore::where('subject_id', $classSubjectTerm->subject_id)
             ->where('term_id', $classSubjectTerm->term_id)
@@ -98,7 +108,7 @@ class ClassSubjectTermController extends Controller
 
         $editor = $sampleScore ? \App\Models\User::find($sampleScore->edited_by) : null;
 
-        return view('class_subject_terms.upload_score', compact('classSubjectTerm', 'students', 'existingScores', 'editor'));
+        return view('class_subject_terms.upload_score', compact('classSubjectTerm', 'students', 'existingScores', 'editor', 'batches', 'selectedBatchId'));
     }
 
 
@@ -109,10 +119,10 @@ class ClassSubjectTermController extends Controller
             'scores.*.ca1'   => 'nullable|numeric|min:0|max:100',
             'scores.*.ca2'   => 'nullable|numeric|min:0|max:100',
             'scores.*.exam'  => 'nullable|numeric|min:0|max:100',
+            'batch_id'       => 'nullable|exists:batches,id',
         ]);
 
         foreach ($validated['scores'] as $studentId => $s) {
-
             $ca1   = $s['ca1']  ?? 0;
             $ca2   = $s['ca2']  ?? 0;
             $exam  = $s['exam'] ?? 0;
@@ -150,13 +160,19 @@ class ClassSubjectTermController extends Controller
                     'total_score'     => $total,
                     'grade'           => $grade,
                     'remark'          => $remark,
-                    'edited_by'  => auth()->id(),
+                    'edited_by'       => auth()->id(),
                 ]
             );
         }
 
+        // 🔸 Get students in the specified batch (if batch_id is given)
+        $batchId = $validated['batch_id'] ?? null;
+
         $studentIds = $classSubjectTerm->classroom
             ->students()
+            ->when($batchId, function ($query) use ($batchId) {
+                $query->where('batch_id', $batchId);
+            })
             ->pluck('id');
 
         $scores = StudentScore::where([
@@ -168,6 +184,7 @@ class ClassSubjectTermController extends Controller
             ->orderByDesc('total_score')
             ->get(['id', 'total_score']);
 
+        // 🔸 Rank students in the selected batch
         $rank = 0;
         $place = 0;
         $prev = null;
@@ -189,30 +206,41 @@ class ClassSubjectTermController extends Controller
     }
 
 
-    // public function uploadScoresCsv(Request $request, ClassSubjectTerm $classSubjectTerm)
+
+
+
+    // public function uploadScoresExcel(Request $request, ClassSubjectTerm $classSubjectTerm)
     // {
     //     $request->validate([
-    //         'csv_file' => 'required|file|mimes:csv,txt',
+    //         'excel_file' => 'required|file|mimes:xlsx,xls,csv,txt',
+    //         'batch_id' => 'nullable|exists:batches,id'
     //     ]);
 
-    //     $path = $request->file('csv_file')->getRealPath();
-    //     $file = fopen($path, 'r');
+    //     // Read the entire file as an array, first sheet only
+    //     $rows = Excel::toArray([], $request->file('excel_file'))[0];
 
-    //     // Read header
-    //     $header = fgetcsv($file);
-
-    //     while (($row = fgetcsv($file)) !== false) {
-    //         // Assuming CSV columns: registration_number, ca1_score, ca2_score, exam_score
-    //         $registrationNumber = $row[0];
+    //     // Skip the header row (assuming first row is headers)
+    //     foreach (array_slice($rows, 1) as $row) {
+    //         $registrationNumber = $row[0] ?? null;
     //         $ca1 = isset($row[1]) ? floatval($row[1]) : 0;
     //         $ca2 = isset($row[2]) ? floatval($row[2]) : 0;
     //         $exam = isset($row[3]) ? floatval($row[3]) : 0;
 
+    //         if (!$registrationNumber) {
+    //             continue; // Skip empty or malformed rows
+    //         }
+
     //         // Lookup student by registration_number in this classroom
-    //         $student = $classSubjectTerm->classroom->students()->where('registration_number', $registrationNumber)->first();
+    //         $query = $classSubjectTerm->classroom->students()->where('registration_number', $registrationNumber);
+
+    //         if ($request->batch_id) {
+    //             $query->where('batch_id', $request->batch_id);
+    //         }
+
+    //         $student = $query->first();
 
     //         if (!$student) {
-    //             // Optionally skip or collect errors for unknown registration numbers
+    //             // Optionally skip or log unknown registration numbers
     //             continue;
     //         }
 
@@ -255,10 +283,14 @@ class ClassSubjectTermController extends Controller
     //         );
     //     }
 
-    //     fclose($file);
-
     //     // Update positions as before
-    //     $studentIds = $classSubjectTerm->classroom->students()->pluck('id');
+    //     $query = $classSubjectTerm->classroom->students();
+
+    //     if ($request->batch_id) {
+    //         $query->where('batch_id', $request->batch_id);
+    //     }
+
+    //     $studentIds = $query->pluck('id');
 
     //     $scores = StudentScore::where([
     //         'subject_id'      => $classSubjectTerm->subject_id,
@@ -286,20 +318,21 @@ class ClassSubjectTermController extends Controller
     //         }
     //     });
 
-    //     return back()->with('success', 'Scores uploaded via CSV using registration numbers.');
+    //     return back()->with('success', 'Scores uploaded successfully via Excel/CSV using registration numbers.');
     // }
-
 
     public function uploadScoresExcel(Request $request, ClassSubjectTerm $classSubjectTerm)
     {
-        $request->validate([
+        $validated = $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,xls,csv,txt',
+            'batch_id'   => 'nullable|exists:batches,id',
         ]);
 
-        // Read the entire file as an array, first sheet only
+        $batchId = $validated['batch_id'] ?? null;
+
+        // Read the first sheet
         $rows = Excel::toArray([], $request->file('excel_file'))[0];
 
-        // Skip the header row (assuming first row is headers)
         foreach (array_slice($rows, 1) as $row) {
             $registrationNumber = $row[0] ?? null;
             $ca1 = isset($row[1]) ? floatval($row[1]) : 0;
@@ -307,14 +340,19 @@ class ClassSubjectTermController extends Controller
             $exam = isset($row[3]) ? floatval($row[3]) : 0;
 
             if (!$registrationNumber) {
-                continue; // Skip empty or malformed rows
+                continue;
             }
 
-            // Lookup student by registration_number in this classroom
-            $student = $classSubjectTerm->classroom->students()->where('registration_number', $registrationNumber)->first();
+            $studentQuery = $classSubjectTerm->classroom->students()
+                ->where('registration_number', $registrationNumber);
+
+            if ($batchId) {
+                $studentQuery->wherePivot('batch_id', $batchId);
+            }
+
+            $student = $studentQuery->first();
 
             if (!$student) {
-                // Optionally skip or log unknown registration numbers
                 continue;
             }
 
@@ -357,8 +395,10 @@ class ClassSubjectTermController extends Controller
             );
         }
 
-        // Update positions as before
-        $studentIds = $classSubjectTerm->classroom->students()->pluck('id');
+        // Get students in the classroom (and batch if specified)
+        $studentIds = $classSubjectTerm->classroom->students()
+            ->when($batchId, fn($query) => $query->wherePivot('batch_id', $batchId))
+            ->pluck('id');
 
         $scores = StudentScore::where([
             'subject_id'      => $classSubjectTerm->subject_id,
@@ -386,8 +426,9 @@ class ClassSubjectTermController extends Controller
             }
         });
 
-        return back()->with('success', 'Scores uploaded successfully via Excel/CSV using registration numbers.');
+        return back()->with('success', 'Scores uploaded successfully via Excel and ranked based on batch.');
     }
+
 
 
 

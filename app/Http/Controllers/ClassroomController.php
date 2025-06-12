@@ -20,7 +20,7 @@ class ClassroomController extends Controller
     public function store(Request $r)
     {
         Classroom::create($r->validate(['name' => 'required']));
-        return redirect()->route('classrooms.index')->with('success', 'Classroom updated successfully.');
+        return redirect()->route('classrooms.index')->with('success', 'Classroom created successfully.');
     }
 
 
@@ -28,14 +28,16 @@ class ClassroomController extends Controller
     {
         $termId = $request->term_id;
         $sessionYearId = $request->session_year_id;
-
+        $batchId = $request->batch_id;
 
         $students = $classroom->students()
             ->with(['results' => function ($query) use ($termId, $sessionYearId) {
                 $query->where('term_id', $termId)
                     ->where('session_year_id', $sessionYearId);
-            }])
-            // ->paginate(5);
+            }, 'batch'])
+            ->when($batchId, function ($query) use ($batchId) {
+                return $query->where('batch_id', $batchId);
+            })
             ->paginate(10, ['*'], 'students');
 
         $classSubjectTerms = $classroom->classSubjectTerms()
@@ -46,7 +48,6 @@ class ClassroomController extends Controller
                 $query->where('session_year_id', $sessionYearId);
             })
             ->with(['subject', 'term', 'sessionYear'])
-            // ->get();
             ->paginate(10, ['*'], 'classSubjects');
 
         $results = Result::where('classroom_id', $classroom->id)
@@ -83,6 +84,6 @@ class ClassroomController extends Controller
     public function destroy(Classroom $classroom)
     {
         $classroom->delete();
-        return back()->with('success', 'Deleted Successfully');
+        return back()->with('success', 'Classroom deleted successfully.');
     }
 }

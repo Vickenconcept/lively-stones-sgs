@@ -16,14 +16,23 @@
                     <p class="mb-2 text-sm text-gray-600">No edit history found.</p>
                 @endif
             </div>
-            <div>
+            <div class="flex items-center space-x-4">
+                <form method="GET" action="{{ route('class_subject_terms.upload_score_form', $classSubjectTerm) }}" class="flex items-center space-x-2">
+                    <select name="batch_id" class="border rounded px-3 py-2" onchange="this.form.submit()">
+                        <option value="">All Batches</option>
+                        @foreach($batches as $batch)
+                            <option value="{{ $batch->id }}" {{ $selectedBatchId == $batch->id ? 'selected' : '' }}>
+                                {{ $batch->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
                 <button class="btn2 cursor-pointer" @click="openModal = true">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 mr-1">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                      </svg>
-                       <span>Upload File</span>
+                    </svg>
+                    <span>Upload File</span>
                 </button>
-
             </div>
         </div>
 
@@ -34,6 +43,9 @@
         </div>
         <form method="POST" action="{{ route('class_subject_terms.upload_score', $classSubjectTerm) }}">
             @csrf
+            @if($selectedBatchId)
+                <input type="hidden" name="batch_id" value="{{ $selectedBatchId }}">
+            @endif
             <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg p-6">
                 <table class="divide-y divide-gray-200">
                     <thead class="bg-gray-100">
@@ -157,6 +169,9 @@
                                 <form action="{{ route('classSubjectTerms.uploadScoresCsv', $classSubjectTerm) }}"
                                     method="POST" enctype="multipart/form-data">
                                     @csrf
+                                    @if($selectedBatchId)
+                                        <input type="hidden" name="batch_id" value="{{ $selectedBatchId }}">
+                                    @endif
                                     <div class="max-w-sm">
                                         <label class="block">
                                             <span class="sr-only">Choose profile photo</span>
@@ -175,8 +190,6 @@
                                         </label>
                                     </div>
                                     <small class="text-red-600">Accept .csv,.xls,.xlsx</small>
-                                    {{-- <input type="file" name="excel_file" class="form-control"
-                                        accept=".csv,.xls,.xlsx" required> --}}
                                     <button type="submit" @click="openModal = false" class="btn cursor-pointer mt-4">Upload CSV Scores</button>
                                 </form>
                             </div>

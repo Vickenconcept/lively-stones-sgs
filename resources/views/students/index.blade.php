@@ -3,19 +3,22 @@
     <div class="max-w-6xl mx-auto p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold mb-4">Students</h1>
-        <a href="{{ route('students.create') }}" >
-            <button class="btn2">
-                + Add Student
-            </button>
-        </a>
+            @role(['super-admin', 'admin'])
+                <a href="{{ route('students.create') }}" >
+                    <button class="btn2">
+                        + Register Student
+                    </button>
+                </a>
+            @endrole
         </div>
 
         <form method="GET" action="{{ route('students.index') }}" class="mb-4">
             <div class="flex items-end space-x-4">
                 <div>
-                    <label for="class_id" class="text-sm font-semibold">class:</label>
+                    <label for="class_id" class="text-sm font-semibold">Class</label>
                    <div>
                     <select name="class_id" id="class_id" class="form-control">
+                        <option value="">All Classes</option>
                         @foreach (\App\Models\Classroom::all() as $class)
                             <option value="{{ $class->id }}" {{ request('class_id') == $class->id ? 'selected' : '' }}>
                                 {{ $class->name }}
@@ -23,6 +26,23 @@
                         @endforeach
                     </select>
                    </div>
+                </div>
+
+                <div>
+                    <label for="batch_id" class="text-sm font-semibold">Batch</label>
+                    <div>
+                        <select name="batch_id" id="batch_id" class="form-control">
+                            <option value="">All Batches</option>
+                            @php
+                                use App\Models\Batch;
+                            @endphp
+                            @foreach(Batch::all() as $batch)
+                                <option value="{{ $batch->id }}" {{ request('batch_id') == $batch->id ? 'selected' : '' }}>
+                                    {{ $batch->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div>
@@ -41,8 +61,9 @@
                             class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
                             Registration Number</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">Classroom
-                        </th>
+                            class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">Class</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">Batch</th>
                         <th scope="col"
                             class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">Actions
                         </th>
@@ -58,7 +79,11 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {{ $student->classroom->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                <a href="{{ route('students.edit', $student) }}" class="bg-green-900 text-white px-3 text-xs py-2 rounded hover:underline">Edit</a>
+                                {{ $student->batch->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                @role(['super-admin', 'admin'])
+                                    <a href="{{ route('students.edit', $student) }}" class="bg-green-900 text-white px-3 text-xs py-2 rounded hover:underline">Edit</a>
+                                @endrole
                             </td>
                         </tr>
                         @empty
@@ -80,4 +105,30 @@
         </div>
 
     </div>
+
+    @push('scripts')
+    <script>
+        document.getElementById('class_id').addEventListener('change', function() {
+            const classroomId = this.value;
+            const batchSelect = document.getElementById('batch_id');
+            
+            // Clear current options
+            batchSelect.innerHTML = '<option value="">All Batches</option>';
+            
+            if (classroomId) {
+                // Fetch batches for selected classroom
+                fetch(`/students/batches/${classroomId}`)
+                    .then(response => response.json())
+                    .then(batches => {
+                        batches.forEach(batch => {
+                            const option = document.createElement('option');
+                            option.value = batch.id;
+                            option.textContent = batch.name;
+                            batchSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+    </script>
+    @endpush
 @endsection

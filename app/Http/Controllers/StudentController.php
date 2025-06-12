@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Batch;
 use App\Models\Classroom;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -11,10 +12,14 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $classId = $request->class_id;
+        $batchId = $request->batch_id;
 
-        $students = Student::with('classroom')
-            ->when($classId, function ($query, $classId) {
+        $students = Student::with(['classroom', 'batch'])
+            ->when($classId, function ($query) use ($classId) {
                 return $query->where('classroom_id', $classId);
+            })
+            ->when($batchId, function ($query) use ($batchId) {
+                return $query->where('batch_id', $batchId);
             })
             ->paginate(20);
 
@@ -32,29 +37,44 @@ class StudentController extends Controller
         $request->validate([
             'name' => 'required',
             'registration_number' => 'required|unique:students',
-            'classroom_id' => 'required'
+            'classroom_id' => 'required|exists:classrooms,id',
+            'batch_id' => 'required|exists:batches,id'
         ]);
 
         Student::create($request->all());
-        return redirect()->route('students.index')->with('success', 'Registered Successfully');
+        return redirect()->route('students.index')->with('success', 'Student registered successfully.');
     }
 
     public function edit(Student $student)
     {
         $classrooms = Classroom::all();
-        return view('students.edit', compact('student', 'classrooms'));
+        $batches = Batch::all();
+        return view('students.edit', compact('student', 'classrooms', 'batches'));
     }
 
     public function update(Request $request, Student $student)
     {
+        $request->validate([
+            'name' => 'required',
+            'registration_number' => 'required|unique:students,registration_number,' . $student->id,
+            'classroom_id' => 'required|exists:classrooms,id',
+            'batch_id' => 'required|exists:batches,id'
+        ]);
+
         $student->update($request->all());
-        return redirect()->route('students.index')->with('success', 'Updated Successfully');
+        return redirect()->route('students.index')->with('success', 'Student updated successfully.');
     }
 
     public function getStudentsByClass($classroomId)
     {
         $students = Student::where('classroom_id', $classroomId)->get(['id', 'name']);
         return response()->json($students);
+    }
+
+    public function getBatchesByClass($classroomId)
+    {
+        $batches = Batch::all(['id', 'name']);
+        return response()->json($batches);
     }
 
     public function promote(Request $request)

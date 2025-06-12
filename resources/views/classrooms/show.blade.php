@@ -38,7 +38,6 @@
             </div>
         @endif
 
-        {{-- <h2>Students</h2> --}}
         <div class="">
             <form method="GET" action="{{ route('classrooms.show', $classroom) }}" class="mb-6">
                 <div class="flex items-end space-x-4">
@@ -72,6 +71,23 @@
                             </select>
                         </div>
                     </div>
+                    <div>
+                        <label for="batch_id" class="text-sm font-semibold">Batch</label>
+                        <div>
+                            <select name="batch_id" id="batch_id" class="form-control">
+                                <option value="">All Batches</option>
+                                @php
+                                    use App\Models\Batch;
+                                @endphp
+                                @foreach(Batch::all() as $batch)
+                                    <option value="{{ $batch->id }}"
+                                        {{ request('batch_id') == $batch->id ? 'selected' : '' }}>
+                                        {{ $batch->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
 
                     <div>
                         <button type="submit" class="btn">Filter</button>
@@ -79,7 +95,6 @@
                 </div>
                 <input type="hidden" name="students" value="{{ request('students', 1) }}">
                 <input type="hidden" name="classSubjects" value="{{ request('classSubjects', 1) }}">
-                {{-- <input type="hidden" name="page" value="{{ request('page', 1) }}"> --}}
             </form>
         </div>
 
@@ -100,7 +115,6 @@
                 </div>
             @endif
         @endif
-
 
         <main class="grid md:grid-cols-2 gap-3">
             <section>
@@ -137,6 +151,10 @@
                                             </th>
                                             <th scope="col"
                                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
+                                                Batch
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
                                                 Position
                                             </th>
                                             <th scope="col"
@@ -150,34 +168,22 @@
                                             <tr>
                                                 @if (request()->has('term_id') && request()->term_id == 3)
                                                     <td class="px-3 py-2">
-
                                                         <div class="flex items-center">
                                                             <input type="checkbox" name="students[]"
                                                                 value="{{ $student->id }}"
                                                                 class="student-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2">
                                                         </div>
-
                                                     </td>
                                                 @endif
                                                 <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                                                     {{ $student->name }}
                                                 </td>
                                                 <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {{ $student->batch->name }}
+                                                </td>
+                                                <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                                                     {{ $student->results->first()?->position ?? 'N/A' }}</td>
                                                 <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {{-- <form action="{{ route('results.student') }}" method="GET" target="_blank">
-                                                    @csrf
-    
-                                                    <input type="hidden" name="student_id" value="{{ $student->id }}">
-                                                    <input type="hidden" name="term_id" value="{{ request('term_id') }}">
-                                                    <input type="hidden" name="session_year_id"
-                                                        value="{{ request('session_year_id') }}">
-    
-                                                    <button type="submit" 
-                                                        class="bg-blue-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer ">
-                                                        View Result
-                                                    </button>
-                                                </form> --}}
                                                     <button type="button"
                                                         class="bg-blue-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer "
                                                         onclick="viewResult({{ $student->id }})">
@@ -187,7 +193,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="bg-white text-center font-semibold p-5">
+                                                <td colspan="5" class="bg-white text-center font-semibold p-5">
                                                     <div>
                                                         <i class='bx bxs-group text-3xl'></i>
                                                     </div>
@@ -226,6 +232,10 @@
                                         </th>
                                         <th scope="col"
                                             class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
+                                            Batch
+                                        </th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">
                                             Position
                                         </th>
                                         <th scope="col"
@@ -239,34 +249,22 @@
                                         <tr>
                                             @if (request()->has('term_id') && request()->term_id == 3)
                                                 <td class="px-3 py-2">
-
                                                     <div class="flex items-center">
                                                         <input type="checkbox" name="students[]"
                                                             value="{{ $student->id }}"
                                                             class="student-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2">
                                                     </div>
-
                                                 </td>
                                             @endif
                                             <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                                                 {{ $student->name }}
                                             </td>
                                             <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {{ $student->batch->name }}
+                                            </td>
+                                            <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                                                 {{ $student->results->first()?->position ?? 'N/A' }}</td>
                                             <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {{-- <form action="{{ route('results.student') }}" method="GET" target="_blank">
-                                                    @csrf
-    
-                                                    <input type="hidden" name="student_id" value="{{ $student->id }}">
-                                                    <input type="hidden" name="term_id" value="{{ request('term_id') }}">
-                                                    <input type="hidden" name="session_year_id"
-                                                        value="{{ request('session_year_id') }}">
-    
-                                                    <button type="submit" 
-                                                        class="bg-blue-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer ">
-                                                        View Result
-                                                    </button>
-                                                </form> --}}
                                                 <button type="button"
                                                     class="bg-blue-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer "
                                                     onclick="viewResult({{ $student->id }})">
@@ -276,7 +274,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="bg-white text-center font-semibold p-5">
+                                            <td colspan="5" class="bg-white text-center font-semibold p-5">
                                                 <div>
                                                     <i class='bx bxs-group text-3xl'></i>
                                                 </div>
@@ -294,7 +292,6 @@
                         </div>
                     </section>
                 @endif
-
             </section>
 
             <section>
@@ -352,9 +349,7 @@
                                     </td>
                                 </tr>
                             @endforelse
-
                         </tbody>
-
                     </table>
                 </div>
                 <div class="overflow-x-auto">
@@ -364,7 +359,6 @@
                 </div>
             </section>
         </main>
-
     </div>
 
     <script>
@@ -405,7 +399,6 @@
             promoteForm.submit();
         });
     </script>
-
 
     <script>
         function viewResult(studentId) {

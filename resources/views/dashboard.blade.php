@@ -1,100 +1,157 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+        @if($activeSession)
+            <p class="mt-1 text-sm text-gray-500">Active Session: {{ $activeSession->name }}</p>
+        @endif
+    </div>
 
-<div class="max-w-5xl mx-auto py-16">
-    <h4 class="text-2xl font-semibold mb-8">Hey, Welcome Back</h4>
-    <div id="stats" class="grid gird-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-black/60 to-white/5 p-6 rounded-lg">
-            <div class="flex flex-row space-x-4 items-center">
-                <div id="stats-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-white">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                      </svg>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+        <!-- Students Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
                 </div>
-                <div>
-                    <p class="text-indigo-300 text-sm font-medium uppercase leading-4">Students</p>
-                    <p class="text-white font-bold text-2xl inline-flex items-center space-x-2">
-                        <span>{{ $studentsCount }}</span>
-                        <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
-                              </svg>
-                              
-                        </span>
-                    </p>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Students</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $studentsCount }}</p>
                 </div>
             </div>
         </div>
-        <div class="bg-slate-900 p-6 rounded-lg">
-            <div class="flex flex-row space-x-4 items-center">
-                <div id="stats-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-white">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      
+
+        <!-- Teachers Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                 </div>
-                <div>
-                    <p class="text-teal-300 text-sm font-medium uppercase leading-4">Subjects</p>
-                    <p class="text-white font-bold text-2xl inline-flex items-center space-x-2">
-                        <span>{{ $subjectsCount }}</span>
-                        <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
-                              </svg>
-                              
-                        </span>
-                    </p>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Teachers</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $teachersCount }}</p>
                 </div>
             </div>
         </div>
-        <div class="bg-black/60 p-6 rounded-lg">
-            <div class="flex flex-row space-x-4 items-center">
-                <div id="stats-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-white">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                      </svg>
-                      
+
+        <!-- Classes Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
                 </div>
-                <div>
-                    <p class="text-blue-300 text-sm font-medium uppercase leading-4">Classes</p>
-                    <p class="text-white font-bold text-2xl inline-flex items-center space-x-2">
-                        <span>{{ $classesCount }}</span>
-                        <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
-                              </svg>
-                              
-                        </span>
-                    </p>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Classes</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $classesCount }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subjects Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Subjects</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $subjectsCount }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batches Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Batches</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $batchesCount }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="last-users">
-        <h1 class="font-bold py-4 uppercase">Last 24h users</h1>
-        <div class="overflow-x-scroll">
-            <table class="w-full whitespace-nowrap">
-                <thead class="bg-slate-900 text-gray-50">
-                    <th class="text-left py-3 px-2 rounded-l-lg">Name</th>
-                    <th class="text-left py-3 px-2">Email</th>
-                    <th class="text-left py-3 px-2">Group</th>
-                    <th class="text-left py-3 px-2 rounded-r-lg">Status</th>
-                </thead>
-                <tr class="border-b border-gray-700">
-                    <td class="py-3 px-2 font-bold">
-                        <div class="inline-flex space-x-3 items-center">
-                            <span><img class="rounded-full w-8 h-8" src="https://images.generated.photos/tGiLEDiAbS6NdHAXAjCfpKoW05x2nq70NGmxjxzT5aU/rs:fit:256:256/czM6Ly9pY29uczgu/Z3Bob3Rvcy1wcm9k/LnBob3Rvcy92M18w/OTM4ODM1LmpwZw.jpg" alt=""></span>
-                            <span>Thai Mei</span>
-                        </div>
-                    </td>
-                    <td class="py-3 px-2">thai.mei@abc.com</td>
-                    <td class="py-3 px-2">User</td>
-                    <td class="py-3 px-2">Approved</td>
-                </tr>
-                
-            </table>
+    <!-- Recent Activity Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Students -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Recent Students</h2>
+            </div>
+            <div class="p-6">
+                <div class="flow-root">
+                    <ul class="-my-5 divide-y divide-gray-200">
+                        @forelse($recentStudents as $student)
+                            <li class="py-4">
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex-shrink-0">
+                                        <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                            <span class="text-gray-500 font-medium">{{ substr($student->name, 0, 1) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">{{ $student->name }}</p>
+                                        <p class="text-sm text-gray-500 truncate">{{ $student->registration_number }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $student->classroom->name }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="py-4 text-center text-gray-500">No recent students</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Scores -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Recent Scores</h2>
+            </div>
+            <div class="p-6">
+                <div class="flow-root">
+                    <ul class="-my-5 divide-y divide-gray-200">
+                        @forelse($recentScores as $score)
+                            <li class="py-4">
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">{{ $score->student->name }}</p>
+                                        <p class="text-sm text-gray-500 truncate">{{ $score->subject->name }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            {{ $score->total_score }}%
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="py-4 text-center text-gray-500">No recent scores</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>

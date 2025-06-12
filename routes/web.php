@@ -12,6 +12,7 @@ use App\Http\Controllers\StudentScoreController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BatchController;
 use App\Models\Classroom;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
@@ -66,11 +67,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('users/{user}/change-role', [UserController::class, 'changeRole'])->name('users.changeRole');
         Route::put('users/{user}/update-role', [UserController::class, 'updateRole'])->name('users.updateRole');
     });
+
+    Route::resource('/batches', BatchController::class);
 });
 
 
 Route::get('/get-students/{classroom}', [StudentController::class, 'getStudentsByClass']);
 
+Route::get('/students/batches/{classroomId}', [StudentController::class, 'getBatchesByClass']);
 
 Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('/results/select', function () {

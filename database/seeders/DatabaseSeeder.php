@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Batch;
 use App\Models\Classroom;
 use App\Models\ClassSubjectTerm;
 use App\Models\Result;
@@ -100,19 +101,22 @@ class DatabaseSeeder extends Seeder
     // }
     public function run()
     {
-        // Seed roles, permissions, and users first
-        $this->call(RolePermissionSeeder::class);
+        // Step 1: Seed roles and create admin user
+        $this->call([
+            RolePermissionSeeder::class,
+            // UserSeeder::class,
+            BatchSeeder::class,
+        ]);
 
-        // Step 1: Create terms
+        // Step 2: Create terms
         $terms = collect(['1st', '2nd', '3rd'])->map(
-            fn($term) =>
-            Term::firstOrCreate(['name' => $term])
+            fn($term) => Term::firstOrCreate(['name' => $term])
         );
 
-        // Step 2: Create session years
+        // Step 3: Create session years
         $sessionYears = SessionYear::factory(3)->create();
 
-        // Step 3: Create classrooms with promotion_order
+        // Step 4: Create classrooms with promotion_order
         $classroomNames = ['JSS1', 'JSS2', 'JSS3', 'SSS1', 'SSS2', 'SSS3'];
         $classrooms = collect($classroomNames)->map(function ($name, $index) {
             return Classroom::firstOrCreate(
@@ -121,16 +125,24 @@ class DatabaseSeeder extends Seeder
             );
         });
 
-        // Step 4: Create subjects
+        // Step 5: Create subjects
         $subjects = Subject::factory(15)->create();
 
+        // Step 6: Create students with batches
         $classroomStudents = [];
         foreach ($classrooms as $classroom) {
-            $classroomStudents[$classroom->id] = Student::factory(5)->create([
-                'classroom_id' => $classroom->id,
-            ]);
+            $batches = Batch::all(); // Get all predefined batches
+            $studentsPerBatch = 5;
+            
+            foreach ($batches as $batch) {
+                $classroomStudents[$classroom->id][] = Student::factory($studentsPerBatch)->create([
+                    'classroom_id' => $classroom->id,
+                    'batch_id' => $batch->id
+                ]);
+            }
         }
 
+        // Step 7: Create class subject terms
         foreach ($sessionYears as $sessionYear) {
             foreach ($terms as $term) {
                 foreach ($classrooms as $classroom) {
@@ -139,94 +151,48 @@ class DatabaseSeeder extends Seeder
                             'classroom_id' => $classroom->id,
                             'subject_id' => $subject->id,
                             'term_id' => $term->id,
-                            'session_year_id' => $sessionYear->id,
+                            'session_year_id' => $sessionYear->id
                         ]);
                     }
+                }
+            }
+        }
 
-                    $positionBuckets = [];
-                    foreach ($classroomStudents[$classroom->id] as $student) {
-                        foreach ($subjects as $subject) {
-                            $ca1 = rand(5, 15);
-                            $ca2 = rand(5, 15);
-                            $exam = rand(40, 70);
-                            $total = $ca1 + $ca2 + $exam;
+        // Step 8: Generate sample scores and results
+        foreach ($sessionYears as $sessionYear) {
+            foreach ($terms as $term) {
+                foreach ($classrooms as $classroom) {
+                    foreach ($classroomStudents[$classroom->id] as $students) {
+                        foreach ($students as $student) {
+                            foreach ($subjects as $subject) {
+                                $ca1 = rand(5, 15);
+                                $ca2 = rand(5, 15);
+                                $exam = rand(40, 70);
+                                $total = $ca1 + $ca2 + $exam;
 
-                            $score = StudentScore::create([
-                                'student_id' => $student->id,
-                                'subject_id' => $subject->id,
-                                'term_id' => $term->id,
-                                'session_year_id' => $sessionYear->id,
-                                'ca1_score' => $ca1,
-                                'ca2_score' => $ca2,
-                                'exam_score' => $exam,
-                                'total_score' => $total,
-                            ]);
+                                StudentScore::create([
+                                    'student_id' => $student->id,
+                                    'subject_id' => $subject->id,
+                                    'term_id' => $term->id,
+                                    'session_year_id' => $sessionYear->id,
+                                    'ca1_score' => $ca1,
+                                    'ca2_score' => $ca2,
+                                    'exam_score' => $exam,
+                                    'total_score' => $total,
+                                ]);
 
-                            $bucketKey = "{$classroom->id}-{$subject->id}";
-
-                            $positionBuckets[$bucketKey][] = [
-                                'id'    => $score->id,   // primary‑key of row just inserted
-                                'total' => $total,
-                            ];
-
-                            Result::create([
-                                'student_id' => $student->id,
-                                'classroom_id' => $classroom->id,
-                                'term_id' => $term->id,
-                                'session_year_id' => $sessionYear->id,
-                                'subject_id' => $subject->id,
-                                'total_score' => $total,
-                                'average' => $total,
-                                'grade' => $total >= 70 ? 'A' : ($total >= 60 ? 'B' : ($total >= 50 ? 'C' : 'F')),
-                                'position' => null,
-                            ]);
-                        }
-                    }
-
-                    /* -------------------------------------------
-   2️⃣  PASS 2  – Rank, grade & remark
--------------------------------------------*/
-
-                    foreach ($positionBuckets as $bucket) {
-
-                        $sorted = collect($bucket)->sortByDesc('total')->values();
-
-                        $rank = 0;
-                        $prevTotal = null;
-                        $place = 0;
-
-                        foreach ($sorted as $row) {
-                            $place++;
-                            if ($row['total'] !== $prevTotal) {
-                                $rank      = $place;
-                                $prevTotal = $row['total'];
+                                Result::create([
+                                    'student_id' => $student->id,
+                                    'classroom_id' => $classroom->id,
+                                    'term_id' => $term->id,
+                                    'session_year_id' => $sessionYear->id,
+                                    'subject_id' => $subject->id,
+                                    'total_score' => $total,
+                                    'average' => $total,
+                                    'grade' => $total >= 70 ? 'A' : ($total >= 60 ? 'B' : ($total >= 50 ? 'C' : 'F')),
+                                    'position' => null,
+                                ]);
                             }
-
-                            /* Grade table */
-                            $grade = match (true) {
-                                $row['total'] >= 70 => 'A',
-                                $row['total'] >= 60 => 'B',
-                                $row['total'] >= 50 => 'C',
-                                $row['total'] >= 45 => 'D',
-                                $row['total'] >= 40 => 'E',
-                                default            => 'F',
-                            };
-
-                            /* Remark table */
-                            $remark = match ($grade) {
-                                'A' => 'Excellent',
-                                'B' => 'Very Good',
-                                'C' => 'Good',
-                                'D' => 'Fair',
-                                'E' => 'Poor',
-                                default => 'Fail',
-                            };
-
-                            StudentScore::whereKey($row['id'])->update([
-                                'grade'    => $grade,
-                                'position' => $rank,
-                                'remark'   => $remark,
-                            ]);
                         }
                     }
                 }
