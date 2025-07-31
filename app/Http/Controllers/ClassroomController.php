@@ -6,6 +6,7 @@ use App\Models\Classroom;
 use App\Models\Result;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ClassroomController extends Controller
 {
@@ -31,9 +32,12 @@ class ClassroomController extends Controller
         $batchId = $request->batch_id;
 
         $students = $classroom->students()
-            ->with(['results' => function ($query) use ($termId, $sessionYearId) {
-                $query->where('term_id', $termId)
-                    ->where('session_year_id', $sessionYearId);
+            ->with(['results' => function ($query) use ($termId, $sessionYearId, $classroom) {
+                if ($termId && $sessionYearId) {
+                    $query->where('term_id', $termId)
+                        ->where('session_year_id', $sessionYearId)
+                        ->where('classroom_id', $classroom->id); // Only show results for current classroom
+                }
             }, 'batch'])
             ->when($batchId, function ($query) use ($batchId) {
                 return $query->where('batch_id', $batchId);
@@ -50,16 +54,36 @@ class ClassroomController extends Controller
             ->with(['subject', 'term', 'sessionYear'])
             ->paginate(10, ['*'], 'classSubjects');
 
-        $results = Result::where('classroom_id', $classroom->id)
-            ->where('term_id', $termId)
-            ->where('session_year_id', $sessionYearId)
-            ->get();
+        // $classSubjectTerms = $classroom->classSubjectTerms()
+        //     ->with(['subject', 'term', 'sessionYear'])
+        //     ->paginate(10, ['*'], 'classSubjects');
 
-        $studentIds = $results->pluck('student_id')->unique();
+        // Only look for old students if we have both term and session year
+        $oldStudents = collect();
+        if ($termId && $sessionYearId) {
+            // Find students who have results for this classroom but are no longer currently in this classroom
+            $results = Result::where('classroom_id', $classroom->id)
+                ->where('term_id', $termId)
+                ->where('session_year_id', $sessionYearId)
+                ->get();
 
-        // Get the students who appeared in those results (i.e., old students)
-        $oldStudents = Student::whereIn('id', $studentIds)
-            ->paginate(10, ['*'], 'oldStudents');
+            $studentIdsWithResults = $results->pluck('student_id')->unique();
+            
+            // Get current students in this classroom
+            $currentStudentIds = $classroom->students()->pluck('id');
+            
+            // Old students are those who have results for this classroom but are not currently in this classroom
+            $oldStudentIds = $studentIdsWithResults->diff($currentStudentIds);
+
+            // Get the old students with their results
+            $oldStudents = Student::whereIn('id', $oldStudentIds)
+                ->with(['results' => function ($query) use ($termId, $sessionYearId, $classroom) {
+                    $query->where('term_id', $termId)
+                        ->where('session_year_id', $sessionYearId)
+                        ->where('classroom_id', $classroom->id); // Only show results for this classroom
+                }, 'batch'])
+                ->paginate(10, ['*'], 'oldStudents');
+        }
 
         return view('classrooms.show', compact('classroom', 'students', 'classSubjectTerms', 'oldStudents'));
     }

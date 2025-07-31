@@ -7,6 +7,7 @@ use App\Models\ScratchCode;
 use App\Models\Student;
 use App\Models\StudentScore;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ResultController extends Controller
 {
@@ -275,16 +276,17 @@ class ResultController extends Controller
         $request->validate([
             'term_id' => 'required|exists:terms,id',
             'session_year_id' => 'required|exists:session_years,id',
-            'scratch_card_code' => auth()->check() ? ['nullable', 'alpha_num'] : ['required', 'alpha_num'],
+            'scratch_card_code' => Auth::check() ? ['nullable', 'alpha_num'] : ['required', 'alpha_num'],
         ]);
 
         $studentId = $request->student_id;
         $termId = $request->term_id;
         $sessionYearId = $request->session_year_id;
         $inputCode = $request->scratch_card_code;
+        $classroomId = $request->classroom_id; // Get classroom_id if provided
 
 
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             if (session()->has('viewed_result')) {
                 session()->forget('viewed_result');
                 return redirect('/results/select');
@@ -320,19 +322,36 @@ class ResultController extends Controller
 
         $student = Student::with('classroom')->findOrFail($studentId);
 
-
-        $result = Result::with('term', 'sessionYear')
+        // Build result query
+        $resultQuery = Result::with('term', 'sessionYear', 'classroom')
             ->where('student_id', $studentId)
             ->where('term_id', $termId)
-            ->where('session_year_id', $sessionYearId)
-            ->first();
+            ->where('session_year_id', $sessionYearId);
 
-        $scores = StudentScore::with('subject')
+        // If classroom_id is provided, filter by it
+        if ($classroomId) {
+            $resultQuery->where('classroom_id', $classroomId);
+        }
+
+        $result = $resultQuery->first();
+
+        // Build scores query
+        $scoresQuery = StudentScore::with('subject')
             ->where('student_id', $studentId)
             ->where('term_id', $termId)
-            ->where('session_year_id', $sessionYearId)
-            ->orderBy('subject_id')
-            ->get();
+            ->where('session_year_id', $sessionYearId);
+
+        // If classroom_id is provided, we need to filter scores by subjects that belong to this classroom
+        if ($classroomId) {
+            $classroomSubjectIds = \App\Models\ClassSubjectTerm::where('classroom_id', $classroomId)
+                ->where('term_id', $termId)
+                ->where('session_year_id', $sessionYearId)
+                ->pluck('subject_id');
+            
+            $scoresQuery->whereIn('subject_id', $classroomSubjectIds);
+        }
+
+        $scores = $scoresQuery->orderBy('subject_id')->get();
 
         $groupedScores = null;
         $totalSum = null;
@@ -344,13 +363,24 @@ class ResultController extends Controller
             $groupedScores = [];
 
             foreach ($terms as $termIdKey => $termLabel) {
-                $scores = StudentScore::with('subject')
+                $termScoresQuery = StudentScore::with('subject')
                     ->where('student_id', $studentId)
                     ->where('term_id', $termIdKey)
-                    ->where('session_year_id', $sessionYearId)
-                    ->get();
+                    ->where('session_year_id', $sessionYearId);
 
-                foreach ($scores as $score) {
+                // If classroom_id is provided, filter by classroom subjects
+                if ($classroomId) {
+                    $classroomSubjectIds = \App\Models\ClassSubjectTerm::where('classroom_id', $classroomId)
+                        ->where('term_id', $termIdKey)
+                        ->where('session_year_id', $sessionYearId)
+                        ->pluck('subject_id');
+                    
+                    $termScoresQuery->whereIn('subject_id', $classroomSubjectIds);
+                }
+
+                $termScores = $termScoresQuery->get();
+
+                foreach ($termScores as $score) {
                     $subjectId = $score->subject_id;
                     $subjectName = $score->subject->name;
 
@@ -375,7 +405,7 @@ class ResultController extends Controller
         $cummulativePosition = optional($result)->c_position;
 
 
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             $code->uses_left--;
             $code->save();
         }

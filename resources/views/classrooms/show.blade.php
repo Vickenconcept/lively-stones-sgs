@@ -98,7 +98,36 @@
             </form>
         </div>
 
-        @if (request('session_year_id') == session('session_year_id'))
+        {{-- Empty state when filters are not set --}}
+        @if (!request('term_id') || !request('session_year_id'))
+            <div class="my-8">
+                <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                    <div class="mb-4">
+                        <i class='bx bx-filter-alt text-6xl text-gray-400'></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Select Filters to View Data</h3>
+                    <p class="text-gray-500 mb-4">
+                        Please select a term and session year above to view students, results, and subjects for this class.
+                    </p>
+                    <div class="flex justify-center space-x-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <i class='bx bx-calendar text-blue-500 text-xl mb-1'></i>
+                            <p class="text-sm text-blue-700 font-medium">Term</p>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <i class='bx bx-calendar-check text-green-500 text-xl mb-1'></i>
+                            <p class="text-sm text-green-700 font-medium">Session Year</p>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                            <i class='bx bx-group text-purple-500 text-xl mb-1'></i>
+                            <p class="text-sm text-purple-700 font-medium">Students & Results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @else
+            {{-- Content when filters are set --}}
+            @if (request('session_year_id') == session('session_year_id'))
             @if (request('term_id') && request('session_year_id'))
                 <div>
                     <form method="POST" action="{{ route('results.calculate') }}">
@@ -120,7 +149,7 @@
             <section>
                 @if (request('session_year_id') == session('session_year_id'))
                     <div class="my-5 flex justify-between">
-                        <h2 class="text-2xl font-medium ">Students</h2>
+                        <h2 class="text-2xl font-medium ">Current Students</h2>
                         <button type="button" id="trigger-promotion"
                             class="bg-green-900 text-white px-4 py-2 rounded hover:underline hidden cursor-pointer">
                             Promote Students
@@ -129,7 +158,7 @@
                 @endif
 
                 @if (request('session_year_id') == session('session_year_id'))
-                    {{-- Active students --}}
+                    {{-- Current students --}}
                     <section>
                         <form id="promote-form" method="POST" action="{{ route('students.promote') }}">
                             @csrf
@@ -197,7 +226,7 @@
                                                     <div>
                                                         <i class='bx bxs-group text-3xl'></i>
                                                     </div>
-                                                    <p>No Active Student</p>
+                                                    <p>No Current Students</p>
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -211,9 +240,14 @@
                             </div>
                         </div>
                     </section>
-                @else
-                    {{-- old students --}}
-                    <section>
+                @endif
+
+                {{-- Historical students (show in both current and historical sessions) --}}
+                @if($oldStudents->count() > 0)
+                    <section class="mt-8">
+                        <div class="my-5">
+                            <h2 class="text-2xl font-medium text-gray-600">Historical Students (Previously in this class)</h2>
+                        </div>
                         <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-100">
@@ -278,18 +312,20 @@
                                                 <div>
                                                     <i class='bx bxs-group text-3xl'></i>
                                                 </div>
-                                                <p>No Active Student</p>
+                                                <p>No Historical Students Found</p>
                                             </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
+                        @if($oldStudents instanceof \Illuminate\Pagination\LengthAwarePaginator)
                         <div class="overflow-x-auto">
                             <div class="mt-4">
-                                {{ $students->appends(request()->query())->links() }}
+                                {{ $oldStudents->appends(request()->query())->links() }}
                             </div>
                         </div>
+                        @endif
                     </section>
                 @endif
             </section>
@@ -359,6 +395,7 @@
                 </div>
             </section>
         </main>
+        @endif
     </div>
 
     <script>
@@ -404,8 +441,9 @@
         function viewResult(studentId) {
             const termId = '{{ request('term_id') }}';
             const sessionYearId = '{{ request('session_year_id') }}';
+            const classroomId = '{{ $classroom->id }}';
             const url =
-                `{{ route('results.student') }}?student_id=${studentId}&term_id=${termId}&session_year_id=${sessionYearId}`;
+                `{{ route('results.student') }}?student_id=${studentId}&term_id=${termId}&session_year_id=${sessionYearId}&classroom_id=${classroomId}`;
             window.open(url, '_blank');
         }
     </script>

@@ -59,3 +59,64 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# Lively Stones SGS
+
+A School Management System for Lively Stones Academy.
+
+## Student Promotion System
+
+### How Promotion Works
+
+When a student is promoted to the next class:
+
+1. **Student Record Update**: Only the student's `classroom_id` in the `students` table is updated to the new classroom.
+
+2. **Historical Data Preservation**: All historical data remains intact:
+   - **StudentScore records**: Individual subject scores remain unchanged with their original `student_id`, `subject_id`, `term_id`, and `session_year_id`
+   - **Result records**: Aggregated results remain unchanged with their original `classroom_id`, `term_id`, and `session_year_id`
+
+3. **Fresh Start in New Class**: The promoted student starts with no scores or results in their new class until new data is added.
+
+### Data Filtering
+
+The system properly filters data based on classroom context:
+
+- **Current Students**: Shows only results and scores that belong to the current classroom
+- **Historical Students**: Shows students who were previously in this classroom but have been promoted to other classes
+- **Historical Data**: When viewing old classes, shows students who had results in that specific classroom
+- **Student Results**: When viewing individual student results, shows data from the appropriate classroom context
+
+### Key Features
+
+- Students can be promoted individually or in batches
+- Historical academic records are preserved and accessible
+- Data is properly segregated by classroom, term, and session year
+- The system maintains data integrity during promotion
+
+### Testing the Promotion System
+
+To test that the promotion system is working correctly:
+
+1. **Create Test Data**:
+   - Create at least 2 classrooms (e.g., JSS1, JSS2)
+   - Add students to the first classroom
+   - Add some scores and results for those students
+   - Set up terms and session years
+
+2. **Promote Students**:
+   - Go to the first classroom view
+   - Select a term and session year
+   - Check the students you want to promote
+   - Click "Promote Students"
+
+3. **Verify Historical Data**:
+   - Go back to the first classroom
+   - Select the same term and session year
+   - You should see the promoted students in the "Historical Students (Previously in this class)" section
+   - Click "View Result" to see their historical data from when they were in this class
+
+4. **Verify Fresh Start**:
+   - Go to the second classroom
+   - The promoted students should be there with no existing data
+   - Add new scores and results for the new class

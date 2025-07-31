@@ -13,6 +13,7 @@ class StudentController extends Controller
     {
         $classId = $request->class_id;
         $batchId = $request->batch_id;
+        $search = $request->search;
 
         $students = Student::with(['classroom', 'batch'])
             ->when($classId, function ($query) use ($classId) {
@@ -20,6 +21,9 @@ class StudentController extends Controller
             })
             ->when($batchId, function ($query) use ($batchId) {
                 return $query->where('batch_id', $batchId);
+            })
+            ->when($search, function ($query) use ($search) {
+                return $query->where('name', 'like', '%' . $search . '%');
             })
             ->paginate(20);
 
@@ -29,7 +33,11 @@ class StudentController extends Controller
     public function create()
     {
         $classrooms = Classroom::all();
-        return view('students.create', compact('classrooms'));
+        // Generate a unique registration number (e.g., REG + next id or random)
+        $latestStudent = Student::orderBy('id', 'desc')->first();
+        $nextId = $latestStudent ? $latestStudent->id + 1 : 1;
+        $registrationNumber = 'REG' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+        return view('students.create', compact('classrooms', 'registrationNumber'));
     }
 
     public function store(Request $request)

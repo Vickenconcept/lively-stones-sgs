@@ -15,6 +15,16 @@
         <form method="GET" action="{{ route('students.index') }}" class="mb-4">
             <div class="flex items-end space-x-4">
                 <div>
+                    <label for="search" class="text-sm font-semibold">Search by Name</label>
+                    <div>
+                        <input type="text" name="search" id="search" 
+                               value="{{ request('search') }}" 
+                               placeholder="Enter student name..."
+                               class="form-control">
+                    </div>
+                </div>
+
+                <div>
                     <label for="class_id" class="text-sm font-semibold">Class</label>
                    <div>
                     <select name="class_id" id="class_id" class="form-control">

@@ -14,7 +14,7 @@
 
         <div>
             <label for="registration_number" class="block font-medium">Registration Number</label>
-            <input type="text" name="registration_number" id="registration_number" class="form-control" value="{{ old('registration_number') }}" required>
+            <input type="text" name="registration_number" id="registration_number" class="form-control" value="{{ old('registration_number', isset($registrationNumber) ? $registrationNumber : '') }}" required readonly>
         </div>
 
         <div>
