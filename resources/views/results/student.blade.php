@@ -1,115 +1,476 @@
 <x-guest-layout>
-    <div class="py-5 px-10 !font-['Manrope']">
-        @php
-            $className = strtoupper($student->classroom->name); 
-        @endphp
-        <div class=" bg-white mx-auto max-w-[595px] p-5">
-            <div id="content" class="max-w-[595px] mx-auto bg-white pt-6">
-                <div class="flex justify-center mb-2">
-                    <img src="{{ asset('images/coat-of-arm.jpeg') }}" alt="coat of arm" class=" w-28">
-                </div>
-                <div class="mb-3">
-                    <h3 class="uppercase font-bold text-center text-sm">Anambra state ministry of education</h3>
-                    <h3 class="uppercase font-bold text-center text-sm">
-                        @if (in_array($className, ['JSS1', 'JSS 1', 'JSS2', 'JSS 2', 'JSS3', 'JSS 3']))
-                            <span>Junior</span>
-                        @elseif(in_array($className, ['SSS1', 'SSS 1', 'SSS2', 'SSS 2', 'SSS3', 'SSS 3']))
-                            <span>Senior</span>
-                        @else
-                            <span>Unknown Category</span>
-                        @endif
-                        Secondary school
-                    </h3>
-                    <h3 class="uppercase font-bold text-center text-sm">{{ $result->term->name ?? 'N/A' }} term result
-                    </h3>
-                </div>
+    @php
+        $genderLabel = data_get($student, 'gender.value', 'N/A');
+        $studentName = $student->name;
+        $schoolName = config('app.name', 'School Management System');
+        $classDisplay = $resultData['session']['class_name'] ?? '';
+        $classSlug = strtoupper(str_replace(' ', '', $classDisplay));
+        $categoryLabel = 'Secondary School';
+        if (str_contains($classSlug, 'JSS')) {
+            $categoryLabel = 'Junior Secondary School';
+        } elseif (str_contains($classSlug, 'SSS') || str_contains($classSlug, 'SS')) {
+            $categoryLabel = 'Senior Secondary School';
+        }
+        $termTitle = $resultData['session']['term_name'] ?? 'Term';
+    @endphp
 
-                <div class="text-sm">
-                    <div class="flex items-center space-x-2">
-                        <p class="capitalize font-semibold">Name of school:</p>
-                        <p class="capitalize font-semibold tracking-wider">De gracious lively stones academy</p>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DejaVu Sans', sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            background: #f3f4f6;
+        }
+
+        .result-wrapper {
+            padding: 20px;
+        }
+
+        .result-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+        }
+
+        .emblem {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .emblem img {
+            width: 90px;
+            height: auto;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .gov-label {
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #111827;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .school-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+
+        .document-title {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .session-info {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .student-info {
+            background: #f8fafc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .student-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .student-info td {
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        .student-details h2 {
+            font-size: 18px;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+
+        .student-details p {
+            margin-bottom: 4px;
+            color: #4b5563;
+            font-size: 11px;
+        }
+
+        .performance-summary {
+            text-align: right;
+        }
+
+        .grade-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .performance-stats {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .section {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+
+        .section-header {
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .section-header h3 {
+            font-size: 13px;
+            color: #1e40af;
+            margin: 0;
+        }
+
+        .section-content {
+            padding: 12px;
+        }
+
+        .scores-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .scores-table th,
+        .scores-table td {
+            padding: 6px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .scores-table th {
+            background: #f8fafc;
+            font-weight: bold;
+            color: #374151;
+            font-size: 9px;
+        }
+
+        .scores-table tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        .grade-excellent {
+            color: #059669;
+            font-weight: bold;
+        }
+
+        .grade-good {
+            color: #0284c7;
+            font-weight: bold;
+        }
+
+        .grade-average {
+            color: #d97706;
+            font-weight: bold;
+        }
+
+        .grade-poor {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .grade-key {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 6px;
+            font-size: 11px;
+        }
+
+        .grade-key span {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .behavioral-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 10px;
+        }
+
+        .behavioral-item:last-child {
+            border-bottom: none;
+        }
+
+        .behavioral-item table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .behavioral-item td {
+            padding: 2px;
+        }
+
+        .trait-name {
+            font-size: 10px;
+            color: #374151;
+        }
+
+        .rating-dots {
+            text-align: right;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin: 0 1px;
+        }
+
+        .dot-filled {
+            background: #3b82f6;
+        }
+
+        .dot-empty {
+            background: #e5e7eb;
+        }
+
+        .attendance-grid table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .attendance-grid td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .attendance-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .attendance-label {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .comment-content {
+            background: #f8fafc;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            font-size: 11px;
+            line-height: 1.5;
+            min-height: 40px;
+        }
+
+        .remarks-grid {
+            display: grid;
+            grid-template-columns: 170px 1fr;
+            row-gap: 10px;
+            column-gap: 8px;
+            font-size: 11px;
+        }
+
+        .remark-label {
+            font-weight: 600;
+            text-transform: capitalize;
+            color: #111827;
+        }
+
+        .remark-line {
+            border-bottom: 1px dashed #cbd5f5;
+            min-height: 24px;
+            display: flex;
+            align-items: flex-end;
+            padding-bottom: 3px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .download-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .download-button {
+            background: #1d4ed8;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .download-button:hover {
+            background: #1e40af;
+        }
+
+        .alert {
+            margin: 40px auto;
+            max-width: 600px;
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+        }
+    </style>
+
+    @if (!$result)
+        <div class="alert">
+            No result found for the selected term and session.
+        </div>
+    @else
+        <div class="result-wrapper">
+            <div class="result-container" id="result-export-root">
+                <div class="header">
+                    <div class="emblem">
+                        <img src="{{ asset('images/coat-of-arm.jpeg') }}" alt="Coat of arm">
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <p class="capitalize font-semibold">Name of Student:</p>
-                        <p class="capitalize font-semibold tracking-wider"> {{ $student->name }}</p>
+                    <p class="gov-label">Anambra State Ministry of Education</p>
+                    <div class="school-name">{{ $schoolName }}</div>
+                    <div class="document-title">{{ $categoryLabel }} • {{ $termTitle }} Term Result</div>
+                    <div class="session-info">
+                        {{ $resultData['session']['session_name'] }} &mdash;
+                        {{ $resultData['session']['term_name'] }} |
+                        Class: {{ $resultData['session']['class_name'] }} {{ $batchName }}
                     </div>
                 </div>
 
-                {{-- <p class="mb-4"><strong>Classroom:</strong> {{ $student->classroom->name ?? 'N/A' }}</p> --}}
+                <div class="student-info">
+                    <table>
+                        <tr>
+                            <td style="width: 70%;">
+                                <div class="student-details">
+                                    <h2>{{ $studentName }}</h2>
+                                    <p><strong>Student ID:</strong> {{ $student->registration_number ?? 'N/A' }}</p>
+                                    <p><strong>Class:</strong> {{ $resultData['session']['class_name'] ?? 'N/A' }}
+                                        {{ $batchName ? '(' . $batchName . ')' : '' }}
+                                    </p>
+                                    <p><strong>Position:</strong>
+                                        {{ $resultData['performance']['rank'] ?? 'N/A' }}
+                                        @if ($totalStudents)
+                                            <span class="text-xs text-gray-500">/ {{ $totalStudents }}</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </td>
+                            <td style="width: 30%;">
+                                <div class="performance-summary">
+                                    <div class="grade-circle">{{ $resultData['performance']['grade'] }}</div>
+                                    <div class="performance-stats">
+                                        <div>
+                                            <strong>{{ $resultData['performance']['average_score'] }}%</strong>
+                                            Average
+                                        </div>
+                                        <div>
+                                            <strong>{{ $resultData['performance']['assessed_subjects'] }}/{{ $resultData['performance']['total_subjects'] }}</strong>
+                                            Subjects
+                                        </div>
+                                        <div>
+                                            <strong>#{{ $resultData['performance']['rank'] }}</strong> Rank
+                                        </div>
+                                        <div>
+                                            <strong>{{ $result->total_score }}</strong> Total Score
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
 
-
-                @if ($result)
-                    <div class="text-sm mb-4">
-                        <div class="flex justify-between items-center border-b">
-                            {{-- <p>Grade: {{ $result->grade }}</p> --}}
-                            <p class="font-semibold">Position: <span
-                                    class=" font-medium mr-3">{{ $result->position }}</span> out of: <span
-                                    class=" font-medium">{{ $totalStudents }}</span></p>
-                            <p class="font-semibold">Class: <span
-                                    class=" font-medium">{{ $result->classroom->name ?? $student->classroom->name ?? 'N/A' }} {{ $batchName }}</span>
-                            </p>
-                        </div>
-                        <div class="flex justify-between items-center border-b">
-                            <p class="font-semibold">Total Score: <span
-                                    class=" font-medium">{{ $result->total_score }}</span></p>
-                            <p class="font-semibold">Average: <span class=" font-medium">{{ $result->average }}</span>
-                            </p>
-                        </div>
-                        <div class="flex justify-between items-center border-b">
-                            <p class="font-semibold">Year: <span
-                                    class=" font-medium">{{ $result->sessionYear->name ?? 'N/A' }}</span></p>
-                            <p class="font-semibold">Term: <span
-                                    class=" font-medium">{{ $result->term->name ?? 'N/A' }}</span></p>
+                <div class="section">
+                    <div class="section-header">
+                        <h3>Grade Interpretation</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="grade-key">
+                            <div><span>A</span> : 70 - 100</div>
+                            <div><span>B</span> : 60 - 69</div>
+                            <div><span>C</span> : 50 - 59</div>
+                            <div><span>D</span> : 45 - 49</div>
+                            <div><span>E</span> : 40 - 44</div>
+                            <div><span>F</span> : 0 - 39</div>
                         </div>
                     </div>
-                @else
-                    <p>No result found for this term and session.</p>
-                @endif
+                </div>
 
-
-
-                {{-- <h3 class="text-xl font-semibold mt-6 mb-2">Subject Scores</h3> --}}
-                <div class=" border">
-                    <div class="">
-                        @if ($scores->count())
-                            <table class="w-full border border-gray-300  text-xs">
-                                <thead class="uppercase">
+                <div class="section">
+                    <div class="section-header">
+                        <h3>Academic Performance</h3>
+                    </div>
+                    <div class="section-content">
+                        @if (count($resultData['scores']))
+                            <table class="scores-table">
+                                <thead>
                                     <tr>
-                                        <th class="p-2 border border-slate-700 shadow text-left"></th>
-                                        <th class="p-2 border border-slate-700 shadow text-left">Subject</th>
-                                        <th class="p-2 border border-slate-700 shadow">CA1 </th>
-                                        <th class="p-2 border border-slate-700 shadow">CA2 </th>
-                                        <th class="p-2 border border-slate-700 shadow">Exam </th>
-                                        <th class="p-2 border border-slate-700 shadow">Total</th>
-                                        <th class="p-2 border border-slate-700 shadow">Grade</th>
-                                        <th class="p-2 border border-slate-700 shadow">Position</th>
-                                        <th class="p-2 border border-slate-700 shadow">Remark</th>
+                                        <th>#</th>
+                                        <th>Subject</th>
+                                        <th>CA</th>
+                                        <th>Exam</th>
+                                        <th>Total</th>
+                                        <th>Grade</th>
+                                        <th>Remark</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($scores as $score)
+                                    @foreach ($resultData['scores'] as $index => $score)
+                                        @php
+                                            $grade = $score['grade'] ?? 'N/A';
+                                            $gradeClass = match (true) {
+                                                in_array($grade, ['A+', 'A']) => 'grade-excellent',
+                                                in_array($grade, ['B+', 'B']) => 'grade-good',
+                                                in_array($grade, ['C+', 'C', 'D']) => 'grade-average',
+                                                default => 'grade-poor',
+                                            };
+                                        @endphp
                                         <tr>
-                                            <td
-                                                class="py-2 px-1 border border-slate-700 shadow font-semibold text-center">
-                                                {{ $loop->index + 1 }}
-                                            </td>
-                                            <td class="py-2 px-1 border border-slate-700 shadow font-semibold">
-                                                {{ $score->subject->name ?? 'N/A' }}
-                                            </td>
-                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
-                                                {{ $score->ca1_score }}</td>
-                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
-                                                {{ $score->ca2_score }}</td>
-                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
-                                                {{ $score->exam_score }}</td>
-                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
-                                                {{ $score->total_score }}</td>
-                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
-                                                {{ $score->grade }}</td>
-                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
-                                                {{ $score->position }}</td>
-                                            <td class="py-2 px-1 border border-slate-700 shadow text-center">
-                                                {{ $score->remark }}</td>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $score['subject_name'] }}</td>
+                                            <td>{{ $score['ca'] ?? '-' }}</td>
+                                            <td>{{ $score['exam'] ?? '-' }}</td>
+                                            <td class="font-bold">{{ $score['total_score'] ?? '-' }}</td>
+                                            <td class="{{ $gradeClass }}">{{ $grade }}</td>
+                                            <td>{{ $score['remark'] ?? '-' }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -118,295 +479,181 @@
                             <p>No subject scores available for this student.</p>
                         @endif
                     </div>
-
-                    {{-- <div class="text-xs col-span-1 ">
-                        <div class=" p-2 ">
-                            <p class="font-semibold mb-2">Key grades</p>
-                            <div class="">
-                                <p class="">
-                                    <span class="font-semibold">A</span>
-                                    <span>=</span>
-                                    <span class="font-semibold">70 - 100</span>
-                                </p>
-                                <p class="">
-                                    <span class="font-semibold">B</span>
-                                    <span>=</span>
-                                    <span class="font-semibold">60 - 69</span>
-                                </p>
-                                <p class="">
-                                    <span class="font-semibold">C</span>
-                                    <span>=</span>
-                                    <span class="font-semibold">50 - 59</span>
-                                </p>
-                                <p class="">
-                                    <span class="font-semibold">D</span>
-                                    <span>=</span>
-                                    <span class="font-semibold">45 - 49</span>
-                                </p>
-                                <p class="">
-                                    <span class="font-semibold">E</span>
-                                    <span>=</span>
-                                    <span class="font-semibold">40 - 44</span>
-                                </p>
-                                <p class="">
-                                    <span class="font-semibold">F</span>
-                                    <span>=</span>
-                                    <span class="font-semibold">39 below</span>
-                                </p>
-                            </div>
-                        </div>
-                       
-
-                    </div> --}}
-
-                </div>
-                <div class="py-4 space-y-5 text-xs uppercase">
-                    <div class="border-b pb-1 flex space-x-2  ">
-                        <p class="font-semibold mb-2">Key grades</p>
-
-                        <p class="">
-                            <span class="">A</span>
-                            <span>:</span>
-                            <span class="">70 - 100 | </span>
-                        </p>
-                        <p class="">
-                            <span class="">B</span>
-                            <span>:</span>
-                            <span class="">60 - 69 | </span>
-                        </p>
-                        <p class="">
-                            <span class="">C</span>
-                            <span>:</span>
-                            <span class="">50 - 59 | </span>
-                        </p>
-                        <p class="">
-                            <span class="">D</span>
-                            <span>:</span>
-                            <span class="">45 - 49 | </span>
-                        </p>
-                        <p class="">
-                            <span class="">E</span>
-                            <span>:</span>
-                            <span class="">40 - 44 | </span>
-                        </p>
-                        <p class="">
-                            <span class="">F</span>
-                            <span>:</span>
-                            <span class="">39 - 0</span>
-                        </p>
-                    </div>
-                    <div class=" flex items-end space-x-2">
-                        <p class="font-semibold whitespace-nowrap">Form teacher's remark: </p>
-                        <hr class="w-full">
-                    </div>
-                    <div class=" flex items-end space-x-2">
-                        <p class="font-semibold whitespace-nowrap">Princeipal's remark: </p>
-                        <hr class="w-full">
-                    </div>
-                    <div class=" ">
-                        <p class="font-semibold">Next term begins: </p>
-                    </div>
                 </div>
 
-
-
-                @if ($termId == 3)
-                    <div class="mt-6 rounded mt-32">
-                        <h2 class=" text-xs mb-4">Combined Term Scores</h2>
-                        <div class="flex justify-center mb-2">
-                            <img src="{{ asset('images/coat-of-arm.jpeg') }}" alt="coat of arm" class=" w-28">
+                @if (!empty($resultData['behavioral_traits']))
+                    <div class="section">
+                        <div class="section-header">
+                            <h3>Behavioral Assessment</h3>
                         </div>
-                        <div class="mb-3">
-                            <h3 class="uppercase font-bold text-center text-sm">Anambra state ministry of education</h3>
-                            <h3 class="uppercase font-bold text-center text-sm">
-                                @if (in_array($className, ['JSS1', 'JSS 1', 'JSS2', 'JSS 2', 'JSS3', 'JSS 3']))
-                                    <span>Junior</span>
-                                @elseif(in_array($className, ['SS1', 'SS 1', 'SS2', 'SS 2', 'SS3', 'SS 3']))
-                                    <span>Senior</span>
-                                @else
-                                    <span>Unknown Category</span>
-                                @endif
-                                Secondary school
-                            </h3>
-
-                            <h3 class="uppercase font-bold text-center text-sm">Cummulative
-                                result
-                            </h3>
-                        </div>
-
-                        <div class="text-sm mb-1">
-                            <div class="flex items-center space-x-2">
-                                <p class="capitalize font-semibold">Name of school:</p>
-                                <p class="capitalize font-semibold tracking-wider">De gracious lively stones academy</p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <p class="capitalize font-semibold">Name of Student:</p>
-                                <p class="capitalize font-semibold tracking-wider"> {{ $student->name }}</p>
-                            </div>
-                        </div>
-
-                        <div class="text-sm mb-4">
-                            <p class="font-semibold border-b ">postion: <span
-                                    class="font-medium mr-3">{{ $cummulativePosition }}</span> out of: <span
-                                    class=" font-medium">{{ $totalStudents }}</span></p>
-                            <div class="flex items-center justify-between border-b">
-                                <p class="font-semibold">Total: <span class="font-medium">{{ $totalSum }}</span>
-                                </p>
-                                <p class="font-semibold">Avarage: <span
-                                        class="font-medium">{{ $averageScore }}</span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class=" border">
-                            <div class=" ">
-                                <table class="w-full text-sm ">
-                                    <thead class="uppercase">
+                        <div class="section-content">
+                            @foreach ($resultData['behavioral_traits'] as $trait)
+                                <div class="behavioral-item">
+                                    <table>
                                         <tr>
-                                            <th class="p-2 text-left border"></th>
-                                            <th class="p-2 text-left border">Subject</th>
-                                            <th class="p-2 text-left border">First Term</th>
-                                            <th class="p-2 text-left border">Second Term</th>
-                                            <th class="p-2 text-left border">Third Term</th>
-                                            <th class="p-2 text-left border">Total</th>
+                                            <td class="trait-name">{{ $trait['name'] }}</td>
+                                            <td class="rating-dots">
+                                                @foreach ($trait['dots'] as $filled)
+                                                    <span class="dot {{ $filled ? 'dot-filled' : 'dot-empty' }}"></span>
+                                                @endforeach
+                                                <span style="margin-left: 5px; font-size: 9px;">{{ $trait['rating'] }}</span>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse ($groupedScores as $subjectData)
-                                            <tr class="border-t">
-                                                <td class="py-2 px-2 border font-semibold text-center">
-                                                    {{ $loop->index + 1 }}
-                                                </td>
-                                                <td class="py-2 px-2 border font-semibold">
-                                                    {{ $subjectData['subject'] }}
-                                                </td>
-                                                <td class="py-2 px-2 border text-center">
-                                                    {{ $subjectData['first'] != 0 ? $subjectData['first'] : 'N/A' }}
-                                                </td>
-                                                <td class="py-2 px-2 border text-center">
-                                                    {{ $subjectData['second'] != 0 ? $subjectData['second'] : 'N/A' }}
-                                                </td>
-                                                <td class="py-2 px-2 border text-center">
-                                                    {{ $subjectData['third'] != 0 ? $subjectData['third'] : 'N/A' }}
-                                                </td>
-                                                <td class="py-2 px-2 border text-center font-semibold">
-                                                    {{ $subjectData['first'] + $subjectData['second'] + $subjectData['third'] }}
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" class="p-2 border text-center text-gray-500">No
-                                                    scores
-                                                    found.</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {{-- <div class="text-xs col-span-1"> --}}
-                            {{-- <div class="border p-2 ">
-                                    <p class="font-semibold mb-2">Key grades</p>
-                                    <div class="grid grid-cols-2 gap-1">
-                                        <p class="">
-                                            <span class="font-semibold">A</span>
-                                            <span>=</span>
-                                            <span class="font-semibold">70 - 100</span>
-                                        </p>
-                                        <p class="">
-                                            <span class="font-semibold">B</span>
-                                            <span>=</span>
-                                            <span class="font-semibold">70 - 100</span>
-                                        </p>
-                                        <p class="">
-                                            <span class="font-semibold">C</span>
-                                            <span>=</span>
-                                            <span class="font-semibold">70 - 100</span>
-                                        </p>
-                                        <p class="">
-                                            <span class="font-semibold">D</span>
-                                            <span>=</span>
-                                            <span class="font-semibold">70 - 100</span>
-                                        </p>
-                                        <p class="">
-                                            <span class="font-semibold">E</span>
-                                            <span>=</span>
-                                            <span class="font-semibold">70 - 100</span>
-                                        </p>
-                                        <p class="">
-                                            <span class="font-semibold">F</span>
-                                            <span>=</span>
-                                            <span class="font-semibold">70 - 100</span>
-                                        </p>
-                                    </div>
+                                    </table>
                                 </div>
-
-                                <div class="border px-2 p-5 space-y-5 ">
-                                    <div class=" ">
-                                        <p class="font-semibold">Form teacher's remark: </p>
-                                        <br>
-                                        <hr>
-                                        <br>
-                                        <hr>
-                                        <br>
-                                        <hr>
-                                    </div>
-                                    <div class=" ">
-                                        <p class="font-semibold">Princeipal's remark: </p>
-                                        <br>
-                                        <hr>
-                                        <br>
-                                        <hr>
-                                        <br>
-                                        <hr>
-                                    </div>
-                                </div> --}}
-
-                            {{-- </div> --}}
+                            @endforeach
                         </div>
                     </div>
-
-
                 @endif
 
-                <div class="mt-4 ">
-                    <button id="download" class="cursor-pointer hover:underline">Download as PDF</button>
+                <div class="section">
+                    <div class="section-header">
+                        <h3>Attendance Summary</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="attendance-grid">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <div class="attendance-value">
+                                            {{ $resultData['attendance']['school_opened'] ?? '--' }}
+                                        </div>
+                                        <div class="attendance-label">School Opened</div>
+                                    </td>
+                                    <td>
+                                        <div class="attendance-value">
+                                            {{ $resultData['attendance']['times_present'] ?? '--' }}
+                                        </div>
+                                        <div class="attendance-label">Times Present</div>
+                                    </td>
+                                    <td>
+                                        <div class="attendance-value">
+                                            {{ $resultData['attendance']['percentage'] ?? '--' }}{{ $resultData['attendance']['percentage'] ? '%' : '' }}
+                                        </div>
+                                        <div class="attendance-label">Attendance Rate</div>
+                                    </td>
+                                    <td>
+                                        <div class="attendance-value">
+                                            {{ $resultData['attendance']['punctuality'] ?? '--' }}
+                                        </div>
+                                        <div class="attendance-label">Punctuality</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h3>Remarks & Next Term Information</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="remarks-grid">
+                            <div class="remark-label">Class Teacher's Remark</div>
+                            <div class="remark-line">
+                                {{ $resultData['comments']['teacher'] ?? '' }}
+                            </div>
+                            <div class="remark-label">Head Teacher's Remark</div>
+                            <div class="remark-line">
+                                {{ $resultData['comments']['head_teacher'] ?? '' }}
+                            </div>
+                            <div class="remark-label">Next Term Begins</div>
+                            <div class="remark-line">&nbsp;</div>
+                            <div class="remark-label">Principal's Signature</div>
+                            <div class="remark-line">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+
+                @if ($termId == 3 && !empty($groupedScores))
+                    <div class="section">
+                        <div class="section-header">
+                            <h3>Cumulative Summary</h3>
+                        </div>
+                        <div class="section-content">
+                            <div class="student-info" style="margin-bottom: 10px;">
+                                <strong>Position:</strong> {{ $cummulativePosition ?? 'N/A' }} /
+                                {{ $totalStudents }}
+                                <br>
+                                <strong>Total:</strong> {{ $totalSum ?? 'N/A' }} |
+                                <strong>Average:</strong> {{ $averageScore ?? 'N/A' }}
+                            </div>
+                            <table class="scores-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Subject</th>
+                                        <th>First Term</th>
+                                        <th>Second Term</th>
+                                        <th>Third Term</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($groupedScores as $index => $subjectData)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $subjectData['subject'] }}</td>
+                                            <td>{{ $subjectData['first'] ?: 'N/A' }}</td>
+                                            <td>{{ $subjectData['second'] ?: 'N/A' }}</td>
+                                            <td>{{ $subjectData['third'] ?: 'N/A' }}</td>
+                                            <td class="font-bold">
+                                                {{ ($subjectData['first'] ?? 0) + ($subjectData['second'] ?? 0) + ($subjectData['third'] ?? 0) }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="footer">
+                    <p>Generated on {{ $generatedAt }}</p>
+                    <p>{{ $schoolName }} &mdash; Academic Result System</p>
                 </div>
             </div>
+
+            <div class="download-actions">
+                <button id="download-result" class="download-button">Download as PDF</button>
+            </div>
         </div>
-    </div>
-
-
-    {{-- <div>
-        <button onclick="window.print()">Print Page</button>
-
-    </div> --}}
-
+    @endif
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-
     <script>
-        document.getElementById("download").addEventListener("click", () => {
-            const element = document.getElementById("content");
-            const opt = {
-                margin: 0.5,
-                filename: 'result.pdf',
+        document.getElementById('download-result')?.addEventListener('click', () => {
+            const element = document.getElementById('result-export-root');
+
+            if (!element) {
+                return;
+            }
+
+            const options = {
+                margin: 0.3,
+                filename: '{{ \Illuminate\Support\Str::slug($studentName) }}-result.pdf',
                 image: {
-                    type: 'jpeg',
+                    type: 'png',
                     quality: 1
-                }, // Use 'png' for lossless compression
+                },
                 html2canvas: {
-                    scale: 2
-                }, // Increase scale for better quality
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    backgroundColor: '#ffffff'
+                },
                 jsPDF: {
                     unit: 'in',
                     format: 'a4',
                     orientation: 'portrait'
+                },
+                pagebreak: {
+                    mode: ['avoid-all', 'css', 'legacy']
                 }
             };
 
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set(options).from(element).save();
         });
     </script>
-
 </x-guest-layout>

@@ -62,77 +62,77 @@ class DatabaseSeeder extends Seeder
         });
 
         // Step 5: Create subjects
-        // $subjects = Subject::factory(15)->create();
+        $subjects = Subject::factory(15)->create();
 
-        // // Step 6: Create students with batches
-        // $classroomStudents = [];
-        // foreach ($classrooms as $classroom) {
-        //     $batches = Batch::all(); // Get all predefined batches
-        //     $studentsPerBatch = 5;
+        // Step 6: Create students with batches
+        $classroomStudents = [];
+        foreach ($classrooms as $classroom) {
+            $batches = Batch::all(); // Get all predefined batches
+            $studentsPerBatch = 5;
             
-        //     foreach ($batches as $batch) {
-        //         $classroomStudents[$classroom->id][] = Student::factory($studentsPerBatch)->create([
-        //             'classroom_id' => $classroom->id,
-        //             'batch_id' => $batch->id
-        //         ]);
-        //     }
-        // }
+            foreach ($batches as $batch) {
+                $classroomStudents[$classroom->id][] = Student::factory($studentsPerBatch)->create([
+                    'classroom_id' => $classroom->id,
+                    'batch_id' => $batch->id
+                ]);
+            }
+        }
 
-        // // Step 7: Create class subject terms
-        // foreach ($sessionYears as $sessionYear) {
-        //     foreach ($terms as $term) {
-        //         foreach ($classrooms as $classroom) {
-        //             foreach ($subjects as $subject) {
-        //                 ClassSubjectTerm::firstOrCreate([
-        //                     'classroom_id' => $classroom->id,
-        //                     'subject_id' => $subject->id,
-        //                     'term_id' => $term->id,
-        //                     'session_year_id' => $sessionYear->id
-        //                 ]);
-        //             }
-        //         }
-        //     }
-        // }
+        // Step 7: Create class subject terms
+        foreach ($sessionYears as $sessionYear) {
+            foreach ($terms as $term) {
+                foreach ($classrooms as $classroom) {
+                    foreach ($subjects as $subject) {
+                        ClassSubjectTerm::firstOrCreate([
+                            'classroom_id' => $classroom->id,
+                            'subject_id' => $subject->id,
+                            'term_id' => $term->id,
+                            'session_year_id' => $sessionYear->id
+                        ]);
+                    }
+                }
+            }
+        }
 
-        // // Step 8: Generate sample scores and results
-        // foreach ($sessionYears as $sessionYear) {
-        //     foreach ($terms as $term) {
-        //         foreach ($classrooms as $classroom) {
-        //             foreach ($classroomStudents[$classroom->id] as $students) {
-        //                 foreach ($students as $student) {
-        //                     foreach ($subjects as $subject) {
-        //                         $ca1 = rand(5, 15);
-        //                         $ca2 = rand(5, 15);
-        //                         $exam = rand(40, 70);
-        //                         $total = $ca1 + $ca2 + $exam;
+        // Step 8: Generate sample scores and results
+        foreach ($sessionYears as $sessionYear) {
+            foreach ($terms as $term) {
+                foreach ($classrooms as $classroom) {
+                    foreach ($classroomStudents[$classroom->id] as $students) {
+                        foreach ($students as $student) {
+                            foreach ($subjects as $subject) {
+                                $ca1 = rand(5, 15);
+                                $ca2 = rand(5, 15);
+                                $exam = rand(40, 70);
+                                $total = $ca1 + $ca2 + $exam;
 
-        //                         StudentScore::create([
-        //                             'student_id' => $student->id,
-        //                             'subject_id' => $subject->id,
-        //                             'term_id' => $term->id,
-        //                             'session_year_id' => $sessionYear->id,
-        //                             'ca1_score' => $ca1,
-        //                             'ca2_score' => $ca2,
-        //                             'exam_score' => $exam,
-        //                             'total_score' => $total,
-        //                         ]);
+                                StudentScore::create([
+                                    'student_id' => $student->id,
+                                    'subject_id' => $subject->id,
+                                    'term_id' => $term->id,
+                                    'session_year_id' => $sessionYear->id,
+                                    'ca1_score' => $ca1,
+                                    'ca2_score' => $ca2,
+                                    'exam_score' => $exam,
+                                    'total_score' => $total,
+                                ]);
 
-        //                         Result::create([
-        //                             'student_id' => $student->id,
-        //                             'classroom_id' => $classroom->id,
-        //                             'term_id' => $term->id,
-        //                             'session_year_id' => $sessionYear->id,
-        //                             'subject_id' => $subject->id,
-        //                             'total_score' => $total,
-        //                             'average' => $total,
-        //                             'grade' => $total >= 70 ? 'A' : ($total >= 60 ? 'B' : ($total >= 50 ? 'C' : 'F')),
-        //                             'position' => null,
-        //                         ]);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+                                Result::create([
+                                    'student_id' => $student->id,
+                                    'classroom_id' => $classroom->id,
+                                    'term_id' => $term->id,
+                                    'session_year_id' => $sessionYear->id,
+                                    'subject_id' => $subject->id,
+                                    'total_score' => $total,
+                                    'average' => $total,
+                                    'grade' => $total >= 70 ? 'A' : ($total >= 60 ? 'B' : ($total >= 50 ? 'C' : 'F')),
+                                    'position' => null,
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassSubjectTerm;
 use App\Models\Result;
 use App\Models\ScratchCode;
 use App\Models\Student;
@@ -353,6 +354,19 @@ class ResultController extends Controller
 
         $scores = $scoresQuery->orderBy('subject_id')->get();
 
+        $scoresData = $scores->map(function ($score) {
+            $caTotal = (int) ($score->ca1_score ?? 0) + (int) ($score->ca2_score ?? 0);
+
+            return [
+                'subject_name' => $score->subject->name ?? 'N/A',
+                'ca' => $caTotal > 0 ? $caTotal : null,
+                'exam' => $score->exam_score,
+                'total_score' => $score->total_score,
+                'grade' => $score->grade,
+                'remark' => $score->remark,
+            ];
+        })->values();
+
         $groupedScores = null;
         $totalSum = null;
         $averageScore = null;
@@ -416,6 +430,47 @@ class ResultController extends Controller
             ->count();
         $batchName = optional($student->batch)->name;
 
+        $selectedClassroomId = $classroomId ?? optional($result)->classroom_id ?? $student->classroom_id;
+        $classSubjectCount = ClassSubjectTerm::where('classroom_id', $selectedClassroomId)
+            ->where('term_id', $termId)
+            ->where('session_year_id', $sessionYearId)
+            ->count();
+
+        $assessedSubjects = $scoresData->filter(fn($score) => !is_null($score['total_score']))->count();
+
+        $sessionName = $result?->sessionYear?->name ?? 'N/A';
+        $termName = $result?->term?->name ?? 'N/A';
+        $className = $result?->classroom?->name ?? $student->classroom->name ?? 'N/A';
+
+        $resultData = [
+            'session' => [
+                'session_name' => $sessionName,
+                'term_name' => $termName,
+                'class_name' => $className,
+            ],
+            'performance' => [
+                'grade' => optional($result)->grade ?? 'N/A',
+                'average_score' => number_format((float) optional($result)->average, 2),
+                'assessed_subjects' => $assessedSubjects,
+                'total_subjects' => max($classSubjectCount, $scoresData->count()),
+                'rank' => optional($result)->position ?? 'N/A',
+            ],
+            'scores' => $scoresData->all(),
+            'behavioral_traits' => [],
+            'attendance' => [
+                'school_opened' => null,
+                'times_present' => null,
+                'percentage' => null,
+                'punctuality' => null,
+            ],
+            'comments' => [
+                'teacher' => optional($result)->teacher_remark,
+                'head_teacher' => optional($result)->principal_remark,
+            ],
+        ];
+
+        $generatedAt = now()->format('F j, Y g:i A');
+
         return view('results.student', compact(
             'student',
             'result',
@@ -427,7 +482,9 @@ class ResultController extends Controller
             'averageScore',
             'cummulativePosition',
             'totalStudents',
-            'batchName'
+            'batchName',
+            'resultData',
+            'generatedAt'
         ));
     }
 }
