@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Batch;
 use App\Models\Classroom;
+use App\Models\SessionYear;
 use App\Models\Student;
+use App\Models\Result;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 
 class StudentController extends Controller
 {
@@ -85,11 +88,73 @@ class StudentController extends Controller
         return response()->json($batches);
     }
 
+
+    public function getStudentsWithResults(Request $request)
+    {
+        try {
+            $validator = ValidatorFacade::make($request->all(), [
+                'classroom_id'     => 'required|exists:classrooms,id',
+                'session_year_id'  => 'required|exists:session_years,id',
+                'term_id'          => 'required|exists:terms,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['message' => 'Invalid input', 'errors' => $validator->errors()], 422);
+            }
+
+            $classroomId    = (int) $request->input('classroom_id');
+            $sessionYearId  = (int) $request->input('session_year_id');
+            $termId         = (int) $request->input('term_id');
+
+            $studentIds = Result::query()
+                ->where('classroom_id', $classroomId)
+                ->where('session_year_id', $sessionYearId)
+                ->where('term_id', $termId)
+                ->distinct()
+                ->pluck('student_id');
+
+            $students = Student::whereIn('id', $studentIds)
+                ->orderBy('name')
+                ->get(['id', 'name']);
+
+            return response()->json($students);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
+        }
+    }
+
     public function promote(Request $request)
     {
+        $request->validate([
+            'students' => 'required|array|min:1',
+            'students.*' => 'exists:students,id',
+            'term_id' => 'required|exists:terms,id',
+            'session_year_id' => 'required|exists:session_years,id',
+        ]);
+
+        $termId = (int) $request->input('term_id');
+        $sessionYearId = (int) $request->input('session_year_id');
+
+        // Only allow promotion at the final term using configured order
+        $finalTermOrder = \App\Models\Term::max('term_order');
+        $currentTermOrder = \App\Models\Term::where('id', $termId)->value('term_order');
+        if (!$finalTermOrder || !$currentTermOrder || $currentTermOrder < $finalTermOrder) {
+            return back()->with('error', 'Promotion is only allowed at the end of the final term.');
+        }
+
+        $currentSession = SessionYear::find($sessionYearId);
+        if (!$currentSession) {
+            return back()->with('error', 'Invalid session year.');
+        }
+
+        $nextSession = $currentSession->next();
+        if (!$nextSession) {
+            $suggested = SessionYear::computeNextNameFrom($currentSession->name) ?? 'Next Session';
+            return back()->with('error', "Next session year is missing. Please create it (e.g., {$suggested}) before promoting.");
+        }
+
         $studentIds = $request->input('students', []);
 
-        // dd($studentIds);
         foreach ($studentIds as $id) {
             $student = Student::find($id);
             if (!$student) continue;
@@ -105,7 +170,7 @@ class StudentController extends Controller
             }
         }
 
-        return back()->with('success', 'Students promoted successfully!');
+        return back()->with('success', 'Students promoted successfully to the next class. Please proceed to use the next session year.');
     }
 
 

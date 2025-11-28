@@ -32,13 +32,25 @@ class DatabaseSeeder extends Seeder
             BatchSeeder::class,
         ]);
 
-        // Step 2: Create terms
-        $terms = collect(['1st', '2nd', '3rd'])->map(
-            fn($term) => Term::firstOrCreate(['name' => $term])
-        );
+        // Step 2: Create terms with explicit order
+        $orderedTerms = [
+            ['name' => '1st', 'term_order' => 1],
+            ['name' => '2nd', 'term_order' => 2],
+            ['name' => '3rd', 'term_order' => 3],
+        ];
+        $terms = collect($orderedTerms)->map(function ($t) {
+            return Term::updateOrCreate(['name' => $t['name']], ['term_order' => $t['term_order']]);
+        });
 
-        // Step 3: Create session years
+        // Step 3: Create session years and backfill sequence
         $sessionYears = SessionYear::factory(3)->create();
+        // Ensure sequence is set in ascending order of start_date or id
+        $all = SessionYear::all()->sortBy(function ($y) {
+            return $y->start_date ?: $y->id;
+        })->values();
+        foreach ($all as $index => $y) {
+            $y->update(['sequence' => $index + 1]);
+        }
 
         // Step 4: Create classrooms with promotion_order
         $classroomNames = ['JSS1', 'JSS2', 'JSS3', 'SSS1', 'SSS2', 'SSS3'];

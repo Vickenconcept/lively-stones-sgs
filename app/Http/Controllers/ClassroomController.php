@@ -107,7 +107,11 @@ class ClassroomController extends Controller
     }
     public function destroy(Classroom $classroom)
     {
-        $classroom->delete();
-        return back()->with('success', 'Classroom deleted successfully.');
+        try {
+            $classroom->delete();
+            return back()->with('success', 'Classroom deleted successfully.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Cannot delete classroom because there are related student or result records.');
+        }
     }
 }

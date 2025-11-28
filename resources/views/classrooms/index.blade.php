@@ -14,7 +14,7 @@
         </div>
 
         <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 mt-2">
                 <thead class="bg-gray-100">
                     <tr>
                         <th scope="col"
@@ -46,11 +46,10 @@
                                             class="bg-green-900 text-white px-3 text-xs py-2 rounded hover:underline">Edit</a>
                                     @endrole
                                     @role(['super-admin'])
-                                        <form action="{{ route('classrooms.destroy', $classroom) }}" method="POST">
+                                        <form action="{{ route('classrooms.destroy', $classroom) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this classroom? If it has related students or results, deletion will fail. Consider removing related data first.');">
                                             @csrf @method('DELETE')
                                             <button
-                                                class="bg-red-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer "
-                                                onsubmit="return confirm('Are you sure?');">Delete</button>
+                                                class="bg-red-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer ">Delete</button>
                                         </form>
                                     @endrole
                                 </div>

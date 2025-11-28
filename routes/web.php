@@ -41,6 +41,9 @@ Route::middleware('guest')->group(function () {
 
 
 
+// Public endpoints to support results selection BEFORE resource routes to avoid capture by students.show
+Route::get('/students/with-results', [StudentController::class, 'getStudentsWithResults']);
+
 Route::middleware(['auth'])->group(function () {
     Route::get('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/home', [AuthController::class, 'dashboard'])->name('home')->middleware('role:super-admin');
@@ -59,6 +62,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('classSubjectTerms.uploadScoresCsv');
     Route::resource('class_subject_terms', ClassSubjectTermController::class)->middleware('role:super-admin|admin');
 
+    // Define bulk route BEFORE resource to avoid being captured by destroy /scratch-codes/{id}
+    Route::delete('/scratch-codes/bulk', [ScratchCodeController::class, 'bulkDestroy'])->name('scratch-codes.bulk-destroy')->middleware('role:super-admin');
     Route::resource('/scratch-codes', ScratchCodeController::class)->middleware('role:super-admin');
     Route::post('/results/calculate', [ResultController::class, 'calculate'])->name('results.calculate');
 

@@ -70,17 +70,17 @@
                                 </td>
                                 <td class="py-0.5 px-2 border-b border-gray-300">
                                     <input type="number" name="scores[{{ $student->id }}][ca1]" min="0"
-                                        max="100" step="0.01" class="border p-1 rounded w-24" placeholder="eg. 20"
+                                        max="20" step="0.01" class="border p-1 rounded w-24" placeholder="eg. 20"
                                         value="{{ old("scores.{$student->id}.ca1", $score->ca1_score ?? '') }}" />
                                 </td>
                                 <td class="py-0.5 px-2 border-b border-gray-300">
                                     <input type="number" name="scores[{{ $student->id }}][ca2]" min="0"
-                                        max="100" step="0.01" class="border p-1 rounded w-24" placeholder="eg. 20"
+                                        max="20" step="0.01" class="border p-1 rounded w-24" placeholder="eg. 20"
                                         value="{{ old("scores.{$student->id}.ca2", $score->ca2_score ?? '') }}" />
                                 </td>
                                 <td class="py-0.5 px-2 border-b border-gray-300">
                                     <input type="number" name="scores[{{ $student->id }}][exam]" min="0"
-                                        max="100" step="0.01" class="border p-1 rounded w-24" placeholder="eg. 60"
+                                        max="60" step="0.01" class="border p-1 rounded w-24" placeholder="eg. 60"
                                         value="{{ old("scores.{$student->id}.exam", $score->exam_score ?? '') }}" />
                                 </td>
                                 <td class="py-0.5 px-2 border-b border-gray-300">
@@ -121,7 +121,7 @@
         {{-- excel modal --}}
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-        <div x-show="openModal" style="display: none" class="fixed z-10 inset-0 overflow-y-auto">
+        <div x-show="openModal" style="display: none" class="fixed inset-0 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 transition-opacity">
                     <div class="absolute inset-0 bg-gray-500 opacity-75"></div>

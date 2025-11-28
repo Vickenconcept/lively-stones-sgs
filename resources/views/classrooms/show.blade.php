@@ -128,7 +128,7 @@
         @else
             {{-- Content when filters are set --}}
             @if (request('session_year_id') == session('session_year_id'))
-            @if (request('term_id') && request('session_year_id'))
+            @if (request('term_id') && request('session_year_id') && $students->count() > 0)
                 <div>
                     <form method="POST" action="{{ route('results.calculate') }}">
                         @csrf
@@ -233,6 +233,8 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <input type="hidden" name="term_id" value="{{ request('term_id') }}">
+                            <input type="hidden" name="session_year_id" value="{{ request('session_year_id') }}">
                         </form>
                         <div class="overflow-x-auto">
                             <div class="mt-4">

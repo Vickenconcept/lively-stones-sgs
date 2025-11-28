@@ -2,10 +2,17 @@
     class="fixed top-0 left-0 z-40 w-64 h-screen  transition-transform -translate-x-full bg-slate-900  sm:translate-x-0  p-3 "
     aria-label="Sidebar">
     <div class="bg-slate-50 h-full rounded-xl px-3 pb-4 ">
-        <div class="py-5 mb-2 border-b-2 border-slate-300">
-            <a href="/home" class="">
+        <div class="py-5 mb-2 border-b-2 border-slate-300 flex items-center justify-between">
+            <a href="/home" class="flex items-center">
                 <img src="{{ asset('images/logo.svg') }}" class="h-10 me-3" alt="Lively Stones Logo" />
             </a>
+            <button type="button" data-drawer-hide="logo-sidebar" aria-controls="logo-sidebar"
+                class="sm:hidden inline-flex items-center p-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                <span class="sr-only">Close sidebar</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
         <div class="h-[85%] pb-4 overflow-y-auto ">
             <ul class="space-y-1 font-medium">

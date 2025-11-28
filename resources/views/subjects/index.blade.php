@@ -10,6 +10,25 @@
             </a>
         </div>
 
+
+        <div class="my-5">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <form method="GET" action="{{ route('subjects.index') }}" class="flex items-center gap-2 w-full sm:w-80">
+                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search subjects..." class="form-control w-full px-3 py-2 rounded border border-gray-300 bg-white" />
+                    <button type="submit" class="btn2 whitespace-nowrap">Search</button>
+                    @if(!empty($search))
+                        <a href="{{ route('subjects.index') }}" class="text-sm text-gray-600 hover:underline">Clear</a>
+                    @endif
+                </form>
+               
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mb-4 overflow-x-auto">
+            {{ $subjects->withQueryString()->links() }}
+        </div>
+
         <!-- Subjects Table -->
         <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
@@ -72,7 +91,7 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            {{ $subjects->links() }}
+            {{ $subjects->withQueryString()->links() }}
         </div>
     </div>
 @endsection

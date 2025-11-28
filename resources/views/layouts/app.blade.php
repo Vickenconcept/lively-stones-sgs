@@ -39,6 +39,11 @@
 
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <link rel="stylesheet" href="{{ asset('build/assets/app-NA7lqD1m.css') }}">
+    <link rel="stylesheet" href="{{ asset('build/assets/app-U_b-ZeMd.css') }}">
+    <script src="{{ asset('build/assets/app-od2CeQhD.js') }}"></script>
 
 
     @yield('styles')
@@ -54,7 +59,7 @@
         <x-sidebar />
         <div id="main-section" class="h-full sm:ml-64 pt-16 bg-slate-900 relative">
             <div>
-                <button id="toggle-btn" class=" p-2 hover:bg-white rounded-r-md cursor-pointer bg-slate-50 absolute top-6 -left-3 z-40">
+                <button id="toggle-btn" class="hidden lg:block p-2 hover:bg-white rounded-r-md cursor-pointer bg-slate-50 absolute top-6 -left-3 z-40">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                       </svg>
@@ -66,7 +71,7 @@
                     style="background-image: url('{{ asset('images/login-image.png') }}');">
                 </div>
                 <!-- Content Layer -->
-                <div class="relative h-full overflow-auto z-10">
+                <div class="relative h-full overflow-auto">
                     <x-session-msg />
                     @yield('content')
                 </div>

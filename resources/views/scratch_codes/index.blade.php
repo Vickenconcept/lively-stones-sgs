@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="max-w-3xl mx-auto mt-6 pb-10">
+    <div class="max-w-3xl mx-auto mt-6 pb-10 px-3">
         <form action="{{ route('scratch-codes.store') }}" method="POST" class="mb-6">
             @csrf
             <label for="count" class="block mb-1 font-semibold">Generate Scratch Codes:</label>
@@ -40,13 +40,19 @@
             </div>
         </div>
 
-        <div class="my-4">
-            {{ $codes->appends(request()->query())->links() }}
-        </div>
+            <div class="flex items-center justify-between my-3">
+                <div>
+                    <button type="button" id="bulk-delete-btn" disabled class="bg-red-300 text-white px-3 text-xs py-2 rounded cursor-not-allowed">Delete Selected</button>
+                </div>
+                <div class="my-2">
+                    {{ $codes->appends(request()->query())->links() }}
+                </div>
+            </div>
         <div id="content" class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-100">
                     <tr>
+                        <th class="px-3 py-3"><input type="checkbox" id="select-all"></th>
                         <th scope="col"
                             class="px-6 py-3 text-left text-xs font-semibold text-gray-800 uppercase tracking-wider">Code
                         </th>
@@ -67,6 +73,9 @@
                 <tbody class="text-sm divide-y divide-gray-300">
                     @forelse ($codes as $code)
                         <tr>
+                            <td class="px-3 py-2">
+                                <input type="checkbox" data-id="{{ $code->id }}" class="row-check" {{ $code->uses_left <= 0 ? '' : 'disabled' }}>
+                            </td>
                             <td
                                 class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 font-semibold tracking-wide">
                                 {{ $code->code }}</td>
@@ -104,10 +113,11 @@
                 </tbody>
             </table>
         </div>
-
-        <div class="mt-4">
-            {{ $codes->appends(request()->query())->links() }}
-        </div>
+        
+        <form id="bulk-delete-form" method="POST" action="{{ route('scratch-codes.bulk-destroy') }}" class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
 
 
     </div>
@@ -119,6 +129,45 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 
     <script>
+        const selectAll = document.getElementById('select-all');
+        const rowChecks = document.querySelectorAll('.row-check');
+        const bulkBtn = document.getElementById('bulk-delete-btn');
+        const bulkForm = document.getElementById('bulk-delete-form');
+
+        function updateBulkState() {
+            const anyChecked = Array.from(rowChecks).some(cb => !cb.disabled && cb.checked);
+            bulkBtn.disabled = !anyChecked;
+            bulkBtn.className = anyChecked
+                ? 'bg-red-900 text-white px-3 text-xs py-2 rounded hover:underline cursor-pointer'
+                : 'bg-red-300 text-white px-3 text-xs py-2 rounded cursor-not-allowed';
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                rowChecks.forEach(cb => { if (!cb.disabled) cb.checked = selectAll.checked; });
+                updateBulkState();
+            });
+        }
+        rowChecks.forEach(cb => cb.addEventListener('change', updateBulkState));
+        updateBulkState();
+
+        bulkBtn && bulkBtn.addEventListener('click', function() {
+            if (bulkBtn.disabled) return;
+            if (!confirm('Delete selected used codes?')) return;
+            // Clear previous inputs
+            bulkForm.querySelectorAll('input[name="ids[]"]').forEach(n => n.remove());
+            // Append selected ids
+            Array.from(rowChecks).forEach(cb => {
+                if (!cb.disabled && cb.checked) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ids[]';
+                    input.value = cb.getAttribute('data-id');
+                    bulkForm.appendChild(input);
+                }
+            });
+            bulkForm.submit();
+        });
         document.getElementById("download").addEventListener("click", () => {
             const element = document.getElementById("content");
             const opt = {

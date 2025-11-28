@@ -13,25 +13,18 @@
             </div>
 
             <div class="mb-4">
-                <label for="classroom_id" class="block text-gray-700 font-semibold">Class</label>
-                <select name="classroom_id" id="classroom_id" class="form-control">
-                    <option value="">-- Select Class --</option>
-                    @foreach ($classrooms as $classroom)
-                        <option value="{{ $classroom->id }}">{{ $classroom->name }}</option>
+                <label for="session_year_id" class="block text-gray-700 font-semibold">Session Year</label>
+                <select name="session_year_id" id="session_year_id" class="form-control" required>
+                    <option value="">-- Select Session --</option>
+                    @foreach ($sessions as $session)
+                        <option value="{{ $session->id }}">{{ $session->name }}</option>
                     @endforeach
-                </select>
-            </div>
-
-            <div class="mb-4 hidden" id="student_select_wrapper">
-                <label for="student_id" class="block text-gray-700 font-semibold">Students</label>
-                <select name="student_id" id="student_id" class="form-control">
-                    <option value="">-- Select Student --</option>
                 </select>
             </div>
 
             <div class="mb-4">
                 <label for="term_id" class="block text-gray-700 font-semibold">Term</label>
-                <select name="term_id" id="term_id" class="form-control" required>
+                <select name="term_id" id="term_id" class="form-control" required disabled>
                     <option value="">-- Select Term --</option>
                     @foreach ($terms as $term)
                         <option value="{{ $term->id }}">{{ $term->name }}</option>
@@ -40,12 +33,19 @@
             </div>
 
             <div class="mb-4">
-                <label for="session_year_id" class="block text-gray-700 font-semibold">Session Year</label>
-                <select name="session_year_id" id="session_year_id" class="form-control" required>
-                    <option value="">-- Select Session --</option>
-                    @foreach ($sessions as $session)
-                        <option value="{{ $session->id }}">{{ $session->name }}</option>
+                <label for="classroom_id" class="block text-gray-700 font-semibold">Class</label>
+                <select name="classroom_id" id="classroom_id" class="form-control" disabled>
+                    <option value="">-- Select Class --</option>
+                    @foreach ($classrooms as $classroom)
+                        <option value="{{ $classroom->id }}">{{ $classroom->name }}</option>
                     @endforeach
+                </select>
+            </div>
+
+            <div class="mb-4 hidden" id="student_select_wrapper">
+                <label for="student_id" class="block text-gray-700 font-semibold">Students (Batch optional)</label>
+                <select name="student_id" id="student_id" class="form-control" disabled>
+                    <option value="">-- Select Student --</option>
                 </select>
             </div>
 
@@ -85,17 +85,37 @@
     </script> --}}
 
     <script>
-        document.getElementById('classroom_id').addEventListener('change', function() {
+        const sessionSelect = document.getElementById('session_year_id');
+        const termSelect = document.getElementById('term_id');
+        const classSelect = document.getElementById('classroom_id');
+        const studentSelect = document.getElementById('student_id');
+        const studentWrapper = document.getElementById('student_select_wrapper');
+
+        sessionSelect.addEventListener('change', () => {
+            const hasSession = !!sessionSelect.value;
+            termSelect.disabled = !hasSession;
+            classSelect.disabled = true;
+            studentSelect.disabled = true;
+            studentWrapper.classList.add('hidden');
+        });
+
+        termSelect.addEventListener('change', () => {
+            const hasTerm = !!termSelect.value;
+            classSelect.disabled = !hasTerm;
+            studentSelect.disabled = true;
+            studentWrapper.classList.add('hidden');
+        });
+
+        classSelect.addEventListener('change', function() {
             const classroomId = this.value;
-            const studentSelect = document.getElementById('student_id');
-            const studentWrapper = document.getElementById('student_select_wrapper');
-
-            // Show or hide the wrapper based on selection
-            if (classroomId) {
+            const sessionYearId = sessionSelect.value;
+            const termId = termSelect.value;
+            if (classroomId && sessionYearId && termId) {
                 studentWrapper.classList.remove('hidden');
+                studentSelect.disabled = false;
                 studentSelect.innerHTML = '<option value="">-- Loading Students --</option>';
-
-                fetch(`/get-students/${classroomId}`)
+                const params = new URLSearchParams({ classroom_id: classroomId, session_year_id: sessionYearId, term_id: termId });
+                fetch(`/students/with-results?${params.toString()}`)
                     .then(response => response.json())
                     .then(data => {
                         studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
@@ -112,6 +132,7 @@
                     });
             } else {
                 studentWrapper.classList.add('hidden');
+                studentSelect.disabled = true;
                 studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
             }
         });

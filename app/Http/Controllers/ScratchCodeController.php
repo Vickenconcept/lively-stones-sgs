@@ -50,4 +50,21 @@ class ScratchCodeController extends Controller
 
         return back()->withErrors(['message' => 'Only used codes can be deleted.']);
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:scratch_codes,id',
+        ]);
+
+        $ids = $validated['ids'];
+
+        $deleted = ScratchCode::whereIn('id', $ids)->where('uses_left', '<=', 0)->delete();
+
+        $notDeleted = count($ids) - $deleted;
+        $msg = $deleted . ' used code(s) deleted.' . ($notDeleted > 0 ? " {$notDeleted} code(s) skipped because they are not used yet." : '');
+
+        return back()->with('success', $msg);
+    }
 }

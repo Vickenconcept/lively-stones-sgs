@@ -14,6 +14,7 @@ use App\Models\Batch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Auth;
 
 class ClassSubjectTermController extends Controller
 {
@@ -55,14 +56,48 @@ class ClassSubjectTermController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'classroom_id' => 'required',
-            'subject_id' => 'required',
-            'term_id' => 'required',
-            'session_year_id' => 'required',
+        $validated = $request->validate([
+            'classroom_ids'    => 'required|array|min:1',
+            'classroom_ids.*'  => 'integer|exists:classrooms,id',
+            'subject_ids'      => 'required|array|min:1',
+            'subject_ids.*'    => 'integer|exists:subjects,id',
+            'term_ids'         => 'required|array|min:1',
+            'term_ids.*'       => 'integer|exists:terms,id',
+            'session_year_id'  => 'required|integer|exists:session_years,id',
         ]);
-        ClassSubjectTerm::create($data);
-        return redirect()->route('class_subject_terms.index');
+
+        $classroomIds = $validated['classroom_ids'];
+        $subjectIds   = $validated['subject_ids'];
+        $termIds      = $validated['term_ids'];
+        $sessionYearId = $validated['session_year_id'];
+
+        $createdCount = 0;
+
+        foreach ($classroomIds as $classroomId) {
+            foreach ($subjectIds as $subjectId) {
+                foreach ($termIds as $termId) {
+                    $exists = ClassSubjectTerm::where([
+                        'classroom_id'    => $classroomId,
+                        'subject_id'      => $subjectId,
+                        'term_id'         => $termId,
+                        'session_year_id' => $sessionYearId,
+                    ])->exists();
+
+                    if (!$exists) {
+                        ClassSubjectTerm::create([
+                            'classroom_id'    => $classroomId,
+                            'subject_id'      => $subjectId,
+                            'term_id'         => $termId,
+                            'session_year_id' => $sessionYearId,
+                        ]);
+                        $createdCount++;
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('class_subject_terms.index')
+            ->with('success', $createdCount . ' assignment(s) created successfully.');
     }
 
     public function edit(ClassSubjectTerm $classSubjectTerm)
@@ -104,9 +139,14 @@ class ClassSubjectTermController extends Controller
             ->get()
             ->keyBy('student_id');
 
-        $sampleScore = $existingScores->first();
+        // Get the latest edited score to determine the most recent editor
+        $latestScore = \App\Models\StudentScore::where('subject_id', $classSubjectTerm->subject_id)
+            ->where('term_id', $classSubjectTerm->term_id)
+            ->where('session_year_id', $classSubjectTerm->session_year_id)
+            ->orderByDesc('updated_at')
+            ->first();
 
-        $editor = $sampleScore ? \App\Models\User::find($sampleScore->edited_by) : null;
+        $editor = $latestScore ? \App\Models\User::find($latestScore->edited_by) : null;
 
         return view('class_subject_terms.upload_score', compact('classSubjectTerm', 'students', 'existingScores', 'editor', 'batches', 'selectedBatchId'));
     }
@@ -116,9 +156,9 @@ class ClassSubjectTermController extends Controller
     {
         $validated = $request->validate([
             'scores'         => 'required|array',
-            'scores.*.ca1'   => 'nullable|numeric|min:0|max:100',
-            'scores.*.ca2'   => 'nullable|numeric|min:0|max:100',
-            'scores.*.exam'  => 'nullable|numeric|min:0|max:100',
+            'scores.*.ca1'   => 'nullable|numeric|min:0|max:20',
+            'scores.*.ca2'   => 'nullable|numeric|min:0|max:20',
+            'scores.*.exam'  => 'nullable|numeric|min:0|max:60',
             'batch_id'       => 'nullable|exists:batches,id',
         ]);
 
@@ -160,7 +200,7 @@ class ClassSubjectTermController extends Controller
                     'total_score'     => $total,
                     'grade'           => $grade,
                     'remark'          => $remark,
-                    'edited_by'       => auth()->id(),
+                    'edited_by'       => Auth::id(),
                 ]
             );
         }
@@ -390,7 +430,7 @@ class ClassSubjectTermController extends Controller
                     'total_score' => $total,
                     'grade'       => $grade,
                     'remark'      => $remark,
-                    'edited_by'   => auth()->id(),
+                    'edited_by'   => Auth::id(),
                 ]
             );
         }
